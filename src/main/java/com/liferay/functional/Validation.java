@@ -23,7 +23,7 @@ import java.util.Collections;
 /**
  * @author Carlos Sierra Andrés
  */
-public interface Validation<T, R> {
+public interface Validation<T, R> extends Functor<R>{
 
 	public ValidationResult<R> validate(T input);
 
@@ -32,14 +32,13 @@ public interface Validation<T, R> {
 			o -> other.validate(input));
 	}
 
-	public default <S> Validation<T, S> flatMap(
-		Function1<T, Validation<R, S>> fun) {
+	public default <S> Validation<T, S> fmap(Function1<R, S> fun) {
 
 		return input -> {
 			ValidationResult<R> result = validate(input);
 			Validation<R, S> validation = fun.apply(input);
 
-			return (ValidationResult<S>)result.flatMap(validation::validate);
+			return (ValidationResult<S>)result.fmap(fun);
 		};
 	}
 
