@@ -12,7 +12,7 @@ package com.liferay.functional; /**
  * details.
  */
 
-import com.liferay.functional.OptionalInstance.MyClass;
+import com.liferay.functional.OptionalApplicative.MyClass;
 import com.liferay.functional.ValidationResult.Failure;
 import com.liferay.functional.ValidationResult.Success;
 import javaslang.Function1;
@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
-
 
 /**
  * @author Carlos Sierra Andrés
@@ -135,14 +134,10 @@ public interface Validation<T, R> extends Functor<R>{
 		ValidationResult<String> safeDni = dni.validate(
 			Optional.of("50211539D"));
 
-		ApplicativeInstance<ValidationResult<?>> applicativeInstance =
-			new ApplicativeInstance<ValidationResult<?>>() {};
-
-		Applicative<ValidationResult<?>, MyClass> result =
-			applicativeInstance.lift(
-				MyClass::new,
-					mayorDeEdad.validate("15"),
-					safeDni);
+		ValidationResult<MyClass> result =
+			(ValidationResult<MyClass>)Applicative.lift(
+				MyClass::new, mayorDeEdad.validate("15"), safeDni
+			);
 
 		System.out.println(result);
 

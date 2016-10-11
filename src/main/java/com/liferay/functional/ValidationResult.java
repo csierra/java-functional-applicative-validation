@@ -12,7 +12,7 @@ package com.liferay.functional; /**
  * details.
  */
 
-import com.liferay.functional.OptionalInstance.MyClass;
+import com.liferay.functional.OptionalApplicative.MyClass;
 import javaslang.Function1;
 
 import java.util.ArrayList;
@@ -108,14 +108,9 @@ public interface ValidationResult<T> extends DefaultValidationResult<T> {
 		}
 	}
 
-
-
 	public static void main(String[] args) {
-		ApplicativeInstance<ValidationResult<?>> applicativeInstance =
-			new ApplicativeInstance<ValidationResult<?>>() {};
-
-		Applicative<ValidationResult<?>, MyClass> carlos =
-			applicativeInstance.lift(
+		ValidationResult<MyClass> carlos =
+			(ValidationResult<MyClass>)Applicative.lift(
 				MyClass::new,
 					new Failure<>(Collections.singletonList("Age must be a number")),
 					new Failure<>(Collections.singletonList("DNI must have 9 digits")));

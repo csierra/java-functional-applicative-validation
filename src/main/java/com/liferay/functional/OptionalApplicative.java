@@ -1,4 +1,4 @@
-package com.liferay.functional; /**
+/**
  * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  * <p>
  * This library is free software; you can redistribute it and/or modify it under
@@ -12,26 +12,24 @@ package com.liferay.functional; /**
  * details.
  */
 
-import javaslang.Function1;
-import javaslang.Function2;
+package com.liferay.functional;
 
+import javaslang.Function1;
 import java.util.Optional;
+
 
 /**
  * @author Carlos Sierra Andrés
  */
-public interface OptionalInstance extends ApplicativeInstance<Optional<?>> {
+public interface OptionalApplicative<T> extends Applicative<Optional<?>, T> {
+	@Override
+	<S> OptionalApplicative<S> fmap(Function1<T, S> fun);
 
-	public interface OptionalApplicative<T> extends Applicative<Optional<?>, T> {
-		@Override
-		<S> OptionalApplicative<S> fmap(Function1<T, S> fun);
+	boolean isPresent();
 
-		boolean isPresent();
-
-		@Override
-		default <S> Applicative<Optional<?>, S> pure(S s) {
-			return new Some<>(Optional.of(s));
-		}
+	@Override
+	default <S> Applicative<Optional<?>, S> pure(S s) {
+		return new Some<>(Optional.of(s));
 	}
 
 	public static class Nothing<T> implements OptionalApplicative<T> {
@@ -52,13 +50,6 @@ public interface OptionalInstance extends ApplicativeInstance<Optional<?>> {
 		public boolean isPresent() {
 			return false;
 		}
-
-//		@Override
-//		public <S> OptionalApplicative<S> flatMap(
-//			Function1<T, Applicative<Optional<?>, S>> fun) {
-//
-//			return new Nothing<>();
-//		}
 
 		@Override
 		public String toString() {
@@ -84,7 +75,7 @@ public interface OptionalInstance extends ApplicativeInstance<Optional<?>> {
 			Applicative<Optional<?>, S> ap) {
 
 			return ((OptionalApplicative<S>) ap).fmap(
-					(Function1<S, U>) _t.get());
+				(Function1<S, U>) _t.get());
 		}
 
 		@Override
@@ -115,10 +106,9 @@ public interface OptionalInstance extends ApplicativeInstance<Optional<?>> {
 	}
 
 	public static void main(String[] args) {
-		OptionalInstance optionalInstance = new OptionalInstance(){};
-
 		OptionalApplicative<MyClass> carlos = (OptionalApplicative<MyClass>)
-			optionalInstance.lift(MyClass::new, opt(38), opt("Carlos"));
+			Applicative.lift(
+				MyClass::new, opt(38), opt("Carlos"));
 
 		System.out.println(carlos);
 	}
@@ -136,12 +126,10 @@ public interface OptionalInstance extends ApplicativeInstance<Optional<?>> {
 		@Override
 		public String toString() {
 			return "MyClass{" +
-				   "age=" + age +
-				   ", name='" + name + '\'' +
-				   '}';
+				"age=" + age +
+				", name='" + name + '\'' +
+				'}';
 		}
 	}
-
-	public static Function2<String, String, String> suma = (a, b) -> a + b;
 
 }
