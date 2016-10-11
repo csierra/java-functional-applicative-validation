@@ -18,6 +18,9 @@ import com.liferay.functional.ValidationResult.Success;
 import javaslang.Function1;
 
 import java.util.Collections;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 
 /**
@@ -36,7 +39,6 @@ public interface Validation<T, R> extends Functor<R>{
 
 		return input -> {
 			ValidationResult<R> result = validate(input);
-			Validation<R, S> validation = fun.apply(input);
 
 			return (ValidationResult<S>)result.fmap(fun);
 		};
@@ -47,73 +49,91 @@ public interface Validation<T, R> extends Functor<R>{
 			validation::validate);
 	}
 
-	public static Validation<String, String> nueveletras = input -> {
-		if (input.length() == 9) {
-			return new Success<>(input);
-		}
-		else {
-			return new Failure<>(
-				Collections.singletonList("DNI must have 9 characters"));
-		}
-	};
+	public static <T> Validation<T, T> predicate(
+		Predicate<T> predicate, Function<T, String> error) {
 
-	public static Validation<String, String> isANumber = input -> {
-		try {
-			Integer.parseInt(input);
-
-			return new Success<>(input);
-		}
-		catch (Exception e) {
-			return new Failure<>(Collections.singletonList(
-				input + " is not a number"));
-		}
-	};
-
-	public static Validation<Integer, Integer> greaterThan(int i) {
 		return input -> {
-			if (input > i) {
-				return new Success<>(i);
+			if (predicate.test(input)) {
+				return new Success<>(input);
 			}
 			else {
-				return new Failure<>(Collections.singletonList(
-					input +" must be greater than " + i));
+				return new Failure<>(
+					Collections.singletonList(error.apply(input)));
 			}
 		};
+	}
+
+	public static Validation<String, String> hasLength(int length) {
+		return predicate(
+			input -> input.length() == length,
+			input -> input + " must have " + length + " letters");
+	}
+
+	public static Validation<String, String> isANumber = predicate(
+		input -> {
+			try {
+				Integer.parseInt(input);
+
+				return true;
+			}
+			catch (Exception e) {
+				return false;
+			}
+		}, input -> input + " is not a number");
+
+	public static Validation<Integer, Integer> greaterThan(int min) {
+		return predicate(
+			input -> input > min,
+			input -> input + " must be greater than" + min
+		);
+	}
+
+	public static Validation<Integer, Integer> lowerThan(int max) {
+		return predicate(
+			input -> input < max,
+			input -> input + " should be lower than " + max
+		);
 	}
 
 	public static Validation<String, String> startsWith(String prefix) {
-		return (input) -> {
-			if (input.startsWith(prefix)) {
-				return new Success<>(prefix);
-			}
-			else return new Failure<>(
-				Collections.singletonList(
-					input + " does not start with " + prefix));
-		};
+		return predicate(
+			input -> input.startsWith(prefix),
+			input -> input + " should start with " + prefix
+		);
 	}
 
-	public static Validation<String, String> endsWith(String suffix) {
-		return (input) -> {
-			if (input.endsWith(suffix)) {
-				return new Success<>(input);
-			}
-			else return new Failure<>(
-				Collections.singletonList(
-					input + " does not start with " + suffix));
-		};
+	public static Validation<String, String> endsWith (String suffix) {
+		return predicate(
+			input -> input.endsWith(suffix),
+			input -> input + " should start with " + suffix
+		);
 	}
 
 	public static Validation<String, Integer> safeInt =
-		isANumber.flatMap(n -> o -> new Success<>(Integer.parseInt(n)));
+		isANumber.fmap(Integer::parseInt);
+
+	public static <T> Validation<Optional<T>, T> isThere(Class<T> clazz) {
+		return input -> {
+			if (input.isPresent()) {
+				return new Success<>(input.get());
+			}
+			else {
+				return new Failure<>(
+					Collections.singletonList("Input is empty"));
+			}
+		};
+	}
 
 	public static void main(String[] args) {
 
 		Validation<String, Integer> mayorDeEdad = safeInt.compose(
-			greaterThan(18));
+			greaterThan(18).and(lowerThan(90)));
 
-		Validation<String, String> dni = nueveletras.and(endsWith("D"));
+		Validation<Optional<String>, String> dni =
+			isThere(String.class).compose(hasLength(9).and(endsWith("D")));
 
-		ValidationResult<String> safeDni = dni.validate("50111539D");
+		ValidationResult<String> safeDni = dni.validate(
+			Optional.of("50211539D"));
 
 		ApplicativeInstance<ValidationResult<?>> applicativeInstance =
 			new ApplicativeInstance<ValidationResult<?>>() {};
@@ -121,7 +141,7 @@ public interface Validation<T, R> extends Functor<R>{
 		Applicative<ValidationResult<?>, MyClass> result =
 			applicativeInstance.lift(
 				MyClass::new,
-					mayorDeEdad.validate("19"),
+					mayorDeEdad.validate("15"),
 					safeDni);
 
 		System.out.println(result);
