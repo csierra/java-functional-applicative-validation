@@ -22,6 +22,7 @@ import java.util.Optional;
  * @author Carlos Sierra Andrés
  */
 public interface OptionalApplicative<T> extends Applicative<Optional<?>, T> {
+
 	@Override
 	<S> OptionalApplicative<S> fmap(Function1<T, S> fun);
 
@@ -32,7 +33,7 @@ public interface OptionalApplicative<T> extends Applicative<Optional<?>, T> {
 		return new Some<>(Optional.of(s));
 	}
 
-	public static class Nothing<T> implements OptionalApplicative<T> {
+	class Nothing<T> implements OptionalApplicative<T> {
 
 		@Override
 		public <S> OptionalApplicative<S> fmap(Function1<T, S> fun) {
@@ -57,7 +58,7 @@ public interface OptionalApplicative<T> extends Applicative<Optional<?>, T> {
 		}
 	}
 
-	public static class Some<T> implements OptionalApplicative<T> {
+	class Some<T> implements OptionalApplicative<T> {
 
 		private final Optional<T> _t;
 
@@ -83,53 +84,22 @@ public interface OptionalApplicative<T> extends Applicative<Optional<?>, T> {
 			return true;
 		}
 
-//		@Override
-//		public <S> OptionalApplicative<S> flatMap(
-//			Function1<T, Applicative<Optional<?>, S>> fun) {
-//
-//			Optional<Applicative<Optional<?>, S>> applicativeOptional =
-//				_t.map(fun);
-//
-//			return (OptionalApplicative<S>)applicativeOptional.get();
-//		}
-
-
-
 		@Override
 		public String toString() {
 			return "Some " + _t.get();
 		}
 	}
 
-	public static <T> OptionalApplicative<T> opt(T t) {
+	static <T> OptionalApplicative<T> opt(T t) {
 		return new Some<>(Optional.of(t));
 	}
 
-	public static void main(String[] args) {
+	static void main(String[] args) {
 		OptionalApplicative<MyClass> carlos = (OptionalApplicative<MyClass>)
 			Applicative.lift(
 				MyClass::new, opt(38), opt("Carlos"));
 
 		System.out.println(carlos);
-	}
-
-	public static class MyClass {
-
-		String name;
-		int age;
-
-		public MyClass(int age, String name) {
-			this.age = age;
-			this.name = name;
-		}
-
-		@Override
-		public String toString() {
-			return "MyClass{" +
-				"age=" + age +
-				", name='" + name + '\'' +
-				'}';
-		}
 	}
 
 }

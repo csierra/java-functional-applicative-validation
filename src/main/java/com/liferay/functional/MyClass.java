@@ -1,5 +1,5 @@
-package com.liferay.functional; /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  * <p>
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -12,13 +12,26 @@ package com.liferay.functional; /**
  * details.
  */
 
-import javaslang.Function1;
+package com.liferay.functional;
 
 /**
  * @author Carlos Sierra Andrés
  */
-public interface Functor<T> {
+public class MyClass {
 
-	<S> Functor<S> fmap(Function1<T, S> function);
+	String name;
+	int age;
 
+	public MyClass(int age, String name) {
+		this.age = age;
+		this.name = name;
+	}
+
+	@Override
+	public String toString() {
+		return "MyClass{" +
+			"age=" + age +
+			", name='" + name + '\'' +
+			'}';
+	}
 }

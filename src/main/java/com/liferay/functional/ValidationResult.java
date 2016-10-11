@@ -12,7 +12,6 @@ package com.liferay.functional; /**
  * details.
  */
 
-import com.liferay.functional.OptionalApplicative.MyClass;
 import javaslang.Function1;
 
 import java.util.ArrayList;
@@ -24,7 +23,7 @@ import java.util.List;
  */
 public interface ValidationResult<T> extends DefaultValidationResult<T> {
 
-	public class Success<T> implements ValidationResult<T> {
+	class Success<T> implements ValidationResult<T> {
 
 		private T _t;
 
@@ -60,7 +59,7 @@ public interface ValidationResult<T> extends DefaultValidationResult<T> {
 		}
 	}
 
-	public class Failure<T> implements ValidationResult<T> {
+	class Failure<T> implements ValidationResult<T> {
 
 		private List<String> _reasons;
 
@@ -108,7 +107,7 @@ public interface ValidationResult<T> extends DefaultValidationResult<T> {
 		}
 	}
 
-	public static void main(String[] args) {
+	static void main(String[] args) {
 		ValidationResult<MyClass> carlos =
 			(ValidationResult<MyClass>)Applicative.lift(
 				MyClass::new,

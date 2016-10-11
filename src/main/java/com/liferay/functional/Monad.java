@@ -19,6 +19,6 @@ import javaslang.Function1;
  */
 public interface Monad<M, T> {
 
-	public <S> Monad<M, S> flatMap(Function1<T, Monad<M, S>> fun);
+	<S> Monad<M, S> flatMap(Function1<T, Monad<M, S>> fun);
 
 }
