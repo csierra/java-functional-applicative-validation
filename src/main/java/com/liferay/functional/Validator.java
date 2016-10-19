@@ -16,7 +16,10 @@ import com.liferay.functional.ValidationResult.Failure;
 import com.liferay.functional.ValidationResult.Success;
 import javaslang.Function1;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -67,6 +70,12 @@ public interface Validator<T, R> extends Functor<R>{
 			input -> input + " must have " + length + " letters");
 	}
 
+	static Validator<String, String> longerThan(int length) {
+		return predicate(
+			input -> input.length() > length,
+			input -> input + " must have " + length + " letters");
+	}
+
 	Validator<String, String> isANumber = predicate(
 		input -> {
 			try {
@@ -107,10 +116,24 @@ public interface Validator<T, R> extends Functor<R>{
 		);
 	}
 
+	static <T> Validator<Optional<T>, Optional<T>> ifPresent(
+		Validator<T, T> validator) {
+
+		return (Optional<T> input) -> {
+			if (!input.isPresent()) {
+				return new Success<>(input);
+			}
+			else {
+				return (ValidationResult<Optional<T>>)
+					validator.validate(input.get()).fmap(Optional::of);
+			}
+		};
+	}
+
 	Validator<String, Integer> safeInt =
 		isANumber.fmap(Integer::parseInt);
 
-	static <T> Validator<Optional<T>, T> isThere(Class<T> clazz) {
+	static <T> Validator<Optional<T>, T> notEmpty() {
 		return input -> {
 			if (input.isPresent()) {
 				return new Success<>(input.get());
@@ -122,22 +145,102 @@ public interface Validator<T, R> extends Functor<R>{
 		};
 	}
 
+	static class User {
+
+		String name;
+		Optional<String> middle;
+		Date date;
+
+		public User(String name, Optional<String> middle, Date date) {
+			this.date = date;
+			this.middle = middle;
+			this.name = name;
+		}
+
+		public Date getDate() {
+			return date;
+		}
+
+		public Optional<String> getMiddle() {
+			return middle;
+		}
+
+		public String getName() {
+			return name;
+		}
+
+		@Override
+		public String toString() {
+			return "User{" +
+				"date=" + date +
+				", name='" + name + '\'' +
+				", middle=" + middle +
+				'}';
+		}
+	}
+
 	static void main(String[] args) {
-		Validator<String, Integer> mayorDeEdad = safeInt.compose(
-			greaterThan(18).and(lowerThan(90)));
+//		Validator<String, Integer> mayorDeEdad = safeInt.compose(
+//			greaterThan(18).and(lowerThan(90)));
+//
+//		Validator<Optional<String>, String> dni =
+//			isThere(String.class).compose(hasLength(9).and(endsWith("D")));
+//
+//		ValidationResult<String> safeDni = dni.validate(
+//			Optional.of("50211539D"));
+//
+//		ValidationResult<MyClass> result =
+//			(ValidationResult<MyClass>)Applicative.lift(
+//				MyClass::new, mayorDeEdad.validate("15"), safeDni
+//			);
+//
+//		System.out.println(result);
 
-		Validator<Optional<String>, String> dni =
-			isThere(String.class).compose(hasLength(9).and(endsWith("D")));
+		Validator<String, Integer> safeInt = isANumber.fmap(Integer::parseInt);
 
-		ValidationResult<String> safeDni = dni.validate(
-			Optional.of("50211539D"));
+		Validator<Optional<String>, Integer> isThereAnInteger =
+			Validator.<String>notEmpty().compose(safeInt);
 
-		ValidationResult<MyClass> result =
-			(ValidationResult<MyClass>)Applicative.lift(
-				MyClass::new, mayorDeEdad.validate("15"), safeDni
-			);
+		Validator<Optional<String>, Integer> safeDay =
+			isThereAnInteger.compose(
+					lowerThan(32).and(greaterThan(0)));
 
-		System.out.println(result);
+		Validator<Optional<String>, Integer> safeMonth =
+			isThereAnInteger.compose(
+					lowerThan(13).and(greaterThan(0))).fmap(x -> x - 1);
+
+		Validator<Optional<String>, Integer> safeYear =
+			isThereAnInteger.compose(
+					lowerThan(10000).and(greaterThan(1900))).fmap(x -> x - 1900);
+
+		System.out.println(
+			Applicative.lift(
+				GregorianCalendar::new,
+				safeYear.validate(Optional.of("pepe")),
+				safeMonth.validate(Optional.of("8")),
+				safeDay.validate(Optional.empty())).
+			fmap(GregorianCalendar::getTime));
+
+		ValidationResult<User> carlos = (ValidationResult<User>)
+			Applicative.lift(
+				User::new,
+				new Success<>("carlos"),
+				ifPresent(
+					longerThan(2)).validate(Optional.of("jr.")),
+				Applicative.lift(
+					GregorianCalendar::new,
+					safeYear.validate(Optional.of("1979")),
+					safeMonth.validate(Optional.of("8")),
+					safeDay.validate(Optional.of("11"))).
+					fmap(GregorianCalendar::getTime));
+
+		if (carlos.isPresent()) {
+			System.out.println("YAY: " + carlos.get().toString());
+		}
+		else {
+			System.out.println("BOOOH:" + Arrays.asList(carlos.failures()));
+		}
+
 	}
 
 }
