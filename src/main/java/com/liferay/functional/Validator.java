@@ -24,16 +24,16 @@ import java.util.function.Predicate;
 /**
  * @author Carlos Sierra Andrés
  */
-public interface Validation<T, R> extends Functor<R>{
+public interface Validator<T, R> extends Functor<R>{
 
 	ValidationResult<R> validate(T input);
 
-	default Validation<T, R> and(Validation<T, R> other) {
+	default Validator<T, R> and(Validator<T, R> other) {
 		return input -> (ValidationResult<R>)validate(input).flatMap(
 			o -> other.validate(input));
 	}
 
-	default <S> Validation<T, S> fmap(Function1<R, S> fun) {
+	default <S> Validator<T, S> fmap(Function1<R, S> fun) {
 
 		return input -> {
 			ValidationResult<R> result = validate(input);
@@ -42,12 +42,12 @@ public interface Validation<T, R> extends Functor<R>{
 		};
 	}
 
-	default <S> Validation<T, S> compose(Validation<R, S> validation) {
+	default <S> Validator<T, S> compose(Validator<R, S> validator) {
 		return input -> (ValidationResult<S>) validate(input).flatMap(
-			validation::validate);
+			validator::validate);
 	}
 
-	static <T> Validation<T, T> predicate(
+	static <T> Validator<T, T> predicate(
 		Predicate<T> predicate, Function<T, String> error) {
 
 		return input -> {
@@ -61,13 +61,13 @@ public interface Validation<T, R> extends Functor<R>{
 		};
 	}
 
-	static Validation<String, String> hasLength(int length) {
+	static Validator<String, String> hasLength(int length) {
 		return predicate(
 			input -> input.length() == length,
 			input -> input + " must have " + length + " letters");
 	}
 
-	Validation<String, String> isANumber = predicate(
+	Validator<String, String> isANumber = predicate(
 		input -> {
 			try {
 				Integer.parseInt(input);
@@ -79,38 +79,38 @@ public interface Validation<T, R> extends Functor<R>{
 			}
 		}, input -> input + " is not a number");
 
-	static Validation<Integer, Integer> greaterThan(int min) {
+	static Validator<Integer, Integer> greaterThan(int min) {
 		return predicate(
 			input -> input > min,
 			input -> input + " must be greater than" + min
 		);
 	}
 
-	static Validation<Integer, Integer> lowerThan(int max) {
+	static Validator<Integer, Integer> lowerThan(int max) {
 		return predicate(
 			input -> input < max,
 			input -> input + " should be lower than " + max
 		);
 	}
 
-	static Validation<String, String> startsWith(String prefix) {
+	static Validator<String, String> startsWith(String prefix) {
 		return predicate(
 			input -> input.startsWith(prefix),
 			input -> input + " should start with " + prefix
 		);
 	}
 
-	static Validation<String, String> endsWith (String suffix) {
+	static Validator<String, String> endsWith (String suffix) {
 		return predicate(
 			input -> input.endsWith(suffix),
 			input -> input + " should start with " + suffix
 		);
 	}
 
-	Validation<String, Integer> safeInt =
+	Validator<String, Integer> safeInt =
 		isANumber.fmap(Integer::parseInt);
 
-	static <T> Validation<Optional<T>, T> isThere(Class<T> clazz) {
+	static <T> Validator<Optional<T>, T> isThere(Class<T> clazz) {
 		return input -> {
 			if (input.isPresent()) {
 				return new Success<>(input.get());
@@ -123,10 +123,10 @@ public interface Validation<T, R> extends Functor<R>{
 	}
 
 	static void main(String[] args) {
-		Validation<String, Integer> mayorDeEdad = safeInt.compose(
+		Validator<String, Integer> mayorDeEdad = safeInt.compose(
 			greaterThan(18).and(lowerThan(90)));
 
-		Validation<Optional<String>, String> dni =
+		Validator<Optional<String>, String> dni =
 			isThere(String.class).compose(hasLength(9).and(endsWith("D")));
 
 		ValidationResult<String> safeDni = dni.validate(
