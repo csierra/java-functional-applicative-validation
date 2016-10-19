@@ -23,6 +23,12 @@ import java.util.List;
  */
 public interface ValidationResult<T> extends DefaultValidationResult<T> {
 
+	public boolean isPresent();
+
+	public T get();
+
+	public List<String> failures();
+
 	class Success<T> implements ValidationResult<T> {
 
 		private T _t;
@@ -56,6 +62,21 @@ public interface ValidationResult<T> extends DefaultValidationResult<T> {
 			Function1<T, Monad<ValidationResult<?>, S>> fun) {
 
 			return fun.apply(_t);
+		}
+
+		@Override
+		public boolean isPresent() {
+			return true;
+		}
+
+		@Override
+		public T get() {
+			return _t;
+		}
+
+		@Override
+		public List<String> failures() {
+			return null;
 		}
 	}
 
@@ -104,6 +125,21 @@ public interface ValidationResult<T> extends DefaultValidationResult<T> {
 			Function1<T, Monad<ValidationResult<?>, S>> fun) {
 
 			return (ValidationResult<S>)this;
+		}
+
+		@Override
+		public boolean isPresent() {
+			return false;
+		}
+
+		@Override
+		public T get() {
+			return null;
+		}
+
+		@Override
+		public List<String> failures() {
+			return _reasons;
 		}
 	}
 
