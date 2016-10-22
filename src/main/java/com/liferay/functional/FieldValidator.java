@@ -24,30 +24,52 @@ import java.util.function.Predicate;
 /**
  * @author Carlos Sierra Andrés
  */
-public interface FieldValidator<T, R> extends Functor<R> {
+public interface FieldValidator<T, R>
+	extends Validator<FieldValidator.Field<T>, R> {
+
+	class Field<T> implements Functor<T> {
+
+		public Field(String name, T t) {
+			this.name = name;
+			this.t = t;
+		}
+
+		final public String name;
+
+		final public T t;
+
+		@Override
+		public <S> Field<S> fmap(Function1<T, S> function) {
+			return new Field<>(name, function.apply(t));
+		}
+
+		@Override
+		public String toString() {
+			return "Field[" + name + ']';
+		}
+
+	}
 
 	static FieldValidator<Integer, Integer> between(int min, int max) {
 		return greaterThan(min).and(lowerThan(max));
 	}
 
-	Validation<R> validate(String field, T input);
-
 	default FieldValidator<T, R> and(FieldValidator<T, R> other) {
-		return (fieldName, input) ->
-			(Validation<R>)validate(fieldName, input).
-				flatMap(o -> other.validate(fieldName, input));
+		return (Field<T> field) ->
+			(Validation<R>)validate(field).
+				flatMap(o -> other.validate(field));
 	}
 
 	default <S> FieldValidator<T, S> compose(FieldValidator<R, S> validator) {
-		return (fieldName, input) -> (Validation<S>)
-			validate(fieldName, input).
-				flatMap(i -> validator.validate(fieldName, i));
+		return field -> (Validation<S>)
+			validate(field).
+				flatMap(i -> validator.validate(new Field<>(i.toString(), i)));
 	}
 
 	default <S> FieldValidator<T, S> fmap(Function1<R, S> fun) {
 
-		return (fieldName, input) -> {
-			Validation<R> result = validate(fieldName, input);
+		return field -> {
+			Validation<R> result = validate(field);
 
 			return (Validation<S>)result.fmap(fun);
 		};
@@ -56,13 +78,13 @@ public interface FieldValidator<T, R> extends Functor<R> {
 	static <T> FieldValidator<T, T> predicate(
 		Predicate<T> predicate, Function<String, String> error) {
 
-		return (fieldName, input) -> {
-			if (predicate.test(input)) {
-				return new Validation.Success<>(input);
+		return field -> {
+			if (predicate.test(field.t)) {
+				return new Validation.Success<>(field.t);
 			}
 			else {
 				return new Validation.Failure<>(
-					Collections.singleton(error.apply(fieldName)));
+					Collections.singleton(error.apply(field.name)));
 			}
 		};
 	}
@@ -122,13 +144,13 @@ public interface FieldValidator<T, R> extends Functor<R> {
 	static <T> FieldValidator<Optional<T>, Optional<T>> ifPresent(
 		FieldValidator<T, T> validator) {
 
-		return (String fieldName, Optional<T> input) -> {
-			if (!input.isPresent()) {
-				return new Validation.Success<>(input);
+		return field -> {
+			if (!field.t.isPresent()) {
+				return new Validation.Success<>(field.t);
 			}
 			else {
 				return (Validation<Optional<T>>)
-					validator.validate(fieldName, input.get()).
+					validator.validate(field.fmap(Optional::get)).
 					fmap(Optional::of);
 			}
 		};
@@ -137,13 +159,13 @@ public interface FieldValidator<T, R> extends Functor<R> {
 	FieldValidator<String, Integer> safeInt = isANumber.fmap(Integer::parseInt);
 
 	static <T> FieldValidator<Optional<T>, T> notEmpty() {
-		return (fieldName, input) -> {
-			if (input.isPresent()) {
-				return new Validation.Success<>(input.get());
+		return field -> {
+			if (field.t.isPresent()) {
+				return new Validation.Success<>(field.t.get());
 			}
 			else {
 				return new Validation.Failure<>(
-					Collections.singleton(fieldName + " is empty"));
+					Collections.singleton(field.name + " is empty"));
 			}
 		};
 	}

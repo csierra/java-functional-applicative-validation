@@ -70,7 +70,8 @@ public class MapValidator<T>
 		String fieldName, FieldValidator<Optional<String>, T> fv) {
 
 		return new MapValidator<>(
-			h -> fv.validate(fieldName, Optional.ofNullable(h.get(fieldName))));
+			h -> fv.validate(
+				new Field<>(fieldName, Optional.ofNullable(h.get(fieldName)))));
 	}
 
 	public Validation<T> runValidation(Map<String, String> input) {
