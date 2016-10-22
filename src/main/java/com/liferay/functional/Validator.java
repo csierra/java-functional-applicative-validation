@@ -12,8 +12,8 @@ package com.liferay.functional; /**
  * details.
  */
 
-import com.liferay.functional.ValidationResult.Failure;
-import com.liferay.functional.ValidationResult.Success;
+import com.liferay.functional.Validation.Failure;
+import com.liferay.functional.Validation.Success;
 import javaslang.Function1;
 
 import java.util.Arrays;
@@ -29,24 +29,24 @@ import java.util.function.Predicate;
  */
 public interface Validator<T, R> extends Functor<R>{
 
-	ValidationResult<R> validate(T input);
+	Validation<R> validate(T input);
 
 	default Validator<T, R> and(Validator<T, R> other) {
-		return input -> (ValidationResult<R>)validate(input).flatMap(
+		return input -> (Validation<R>)validate(input).flatMap(
 			o -> other.validate(input));
 	}
 
 	default <S> Validator<T, S> fmap(Function1<R, S> fun) {
 
 		return input -> {
-			ValidationResult<R> result = validate(input);
+			Validation<R> result = validate(input);
 
-			return (ValidationResult<S>)result.fmap(fun);
+			return (Validation<S>)result.fmap(fun);
 		};
 	}
 
 	default <S> Validator<T, S> compose(Validator<R, S> validator) {
-		return input -> (ValidationResult<S>) validate(input).flatMap(
+		return input -> (Validation<S>) validate(input).flatMap(
 			validator::validate);
 	}
 
@@ -59,7 +59,7 @@ public interface Validator<T, R> extends Functor<R>{
 			}
 			else {
 				return new Failure<>(
-					Collections.singletonList(error.apply(input)));
+					Collections.singleton(error.apply(input)));
 			}
 		};
 	}
@@ -124,7 +124,7 @@ public interface Validator<T, R> extends Functor<R>{
 				return new Success<>(input);
 			}
 			else {
-				return (ValidationResult<Optional<T>>)
+				return (Validation<Optional<T>>)
 					validator.validate(input.get()).fmap(Optional::of);
 			}
 		};
@@ -140,7 +140,7 @@ public interface Validator<T, R> extends Functor<R>{
 			}
 			else {
 				return new Failure<>(
-					Collections.singletonList("Input is empty"));
+					Collections.singleton("Input is empty"));
 			}
 		};
 	}
@@ -221,7 +221,7 @@ public interface Validator<T, R> extends Functor<R>{
 				safeDay.validate(Optional.empty())).
 			fmap(GregorianCalendar::getTime));
 
-		ValidationResult<User> carlos = (ValidationResult<User>)
+		Validation<User> carlos = (Validation<User>)
 			Applicative.lift(
 				User::new,
 				new Success<>("carlos"),

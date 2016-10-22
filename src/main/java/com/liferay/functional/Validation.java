@@ -14,22 +14,22 @@ package com.liferay.functional; /**
 
 import javaslang.Function1;
 
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author Carlos Sierra Andrés
  */
-public interface ValidationResult<T> extends DefaultValidationResult<T> {
+public interface Validation<T> extends DefaultValidation<T> {
 
 	public boolean isPresent();
 
 	public T get();
 
-	public List<String> failures();
+	public Set<String> failures();
 
-	class Success<T> implements ValidationResult<T> {
+	class Success<T> implements Validation<T> {
 
 		private T _t;
 
@@ -38,15 +38,15 @@ public interface ValidationResult<T> extends DefaultValidationResult<T> {
 		}
 
 		@Override
-		public <S> Applicative<ValidationResult<?>, S> fmap(
+		public <S> Applicative<Validation<?>, S> fmap(
 			Function1<T, S> fun) {
 
 			return new Success<>(fun.apply(_t));
 		}
 
 		@Override
-		public <S, U> Applicative<ValidationResult<?>, U> apply(
-			Applicative<ValidationResult<?>, S> ap) {
+		public <S, U> Applicative<Validation<?>, U> apply(
+			Applicative<Validation<?>, S> ap) {
 
 			return ap.fmap((Function1<S, U>)_t);
 		}
@@ -58,8 +58,8 @@ public interface ValidationResult<T> extends DefaultValidationResult<T> {
 
 
 		@Override
-		public <S> Monad<ValidationResult<?>, S> flatMap(
-			Function1<T, Monad<ValidationResult<?>, S>> fun) {
+		public <S> Monad<Validation<?>, S> flatMap(
+			Function1<T, Monad<Validation<?>, S>> fun) {
 
 			return fun.apply(_t);
 		}
@@ -75,34 +75,34 @@ public interface ValidationResult<T> extends DefaultValidationResult<T> {
 		}
 
 		@Override
-		public List<String> failures() {
+		public Set<String> failures() {
 			return null;
 		}
 	}
 
-	class Failure<T> implements ValidationResult<T> {
+	class Failure<T> implements Validation<T> {
 
-		private List<String> _reasons;
+		private Set<String> _reasons;
 
-		public Failure(List<String> reasons) {
+		public Failure(Set<String> reasons) {
 			_reasons = reasons;
 		}
 
 		@Override
-		public <S> Applicative<ValidationResult<?>, S> fmap(
+		public <S> Applicative<Validation<?>, S> fmap(
 			Function1<T, S> fun) {
 
-			return (ValidationResult)this;
+			return (Validation)this;
 		}
 
 		@Override
-		public <S, U> Applicative<ValidationResult<?>, U> apply(
-			Applicative<ValidationResult<?>, S> ap) {
+		public <S, U> Applicative<Validation<?>, U> apply(
+			Applicative<Validation<?>, S> ap) {
 
 			if (ap instanceof Failure) {
 				Failure failure = (Failure) ap;
 
-				ArrayList<String> reasons = new ArrayList<>();
+				Set<String> reasons = new HashSet<>();
 
 				reasons.addAll(this._reasons);
 				reasons.addAll(failure._reasons);
@@ -111,7 +111,7 @@ public interface ValidationResult<T> extends DefaultValidationResult<T> {
 			}
 
 			else {
-				return (ValidationResult)this;
+				return (Validation)this;
 			}
 		}
 
@@ -121,10 +121,10 @@ public interface ValidationResult<T> extends DefaultValidationResult<T> {
 		}
 
 		@Override
-		public <S> Monad<ValidationResult<?>, S> flatMap(
-			Function1<T, Monad<ValidationResult<?>, S>> fun) {
+		public <S> Monad<Validation<?>, S> flatMap(
+			Function1<T, Monad<Validation<?>, S>> fun) {
 
-			return (ValidationResult<S>)this;
+			return (Validation<S>)this;
 		}
 
 		@Override
@@ -138,17 +138,17 @@ public interface ValidationResult<T> extends DefaultValidationResult<T> {
 		}
 
 		@Override
-		public List<String> failures() {
+		public Set<String> failures() {
 			return _reasons;
 		}
 	}
 
 	static void main(String[] args) {
-		ValidationResult<MyClass> carlos =
-			(ValidationResult<MyClass>)Applicative.lift(
+		Validation<MyClass> carlos =
+			(Validation<MyClass>)Applicative.lift(
 				MyClass::new,
-					new Failure<>(Collections.singletonList("Age must be a number")),
-					new Failure<>(Collections.singletonList("DNI must have 9 digits")));
+					new Failure<>(Collections.singleton("Age must be a number")),
+					new Failure<>(Collections.singleton("DNI must have 9 digits")));
 
 		System.out.println(carlos);
 	}

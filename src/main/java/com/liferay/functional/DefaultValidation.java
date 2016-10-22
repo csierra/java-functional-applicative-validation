@@ -15,11 +15,11 @@ package com.liferay.functional; /**
 /**
  * @author Carlos Sierra Andrés
  */
-public interface DefaultValidationResult<T> extends
-	Applicative<ValidationResult<?>, T>, Monad<ValidationResult<?>, T> {
+public interface DefaultValidation<T> extends
+	Applicative<Validation<?>, T>, Monad<Validation<?>, T> {
 
 	@Override
-	default <S> Applicative<ValidationResult<?>, S> pure(S s) {
-		return new ValidationResult.Success<>(s);
+	default <S> Applicative<Validation<?>, S> pure(S s) {
+		return new Validation.Success<>(s);
 	}
 }
