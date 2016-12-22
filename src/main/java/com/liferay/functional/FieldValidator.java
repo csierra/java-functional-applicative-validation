@@ -14,8 +14,6 @@
 
 package com.liferay.functional;
 
-import javaslang.Function1;
-
 import java.util.Collections;
 import java.util.Optional;
 import java.util.function.Function;
@@ -27,7 +25,7 @@ import java.util.function.Predicate;
 public interface FieldValidator<T, R>
 	extends Validator<FieldValidator.Field<T>, R> {
 
-	class Field<T> implements Functor<T> {
+	class Field<T> {
 
 		public Field(String name, T t) {
 			this.name = name;
@@ -38,8 +36,7 @@ public interface FieldValidator<T, R>
 
 		final public T t;
 
-		@Override
-		public <S> Field<S> fmap(Function1<T, S> function) {
+		public <S> Field<S> map(Function<T, S> function) {
 			return new Field<>(name, function.apply(t));
 		}
 
@@ -47,6 +44,13 @@ public interface FieldValidator<T, R>
 		public String toString() {
 			return "Field[" + name + ']';
 		}
+
+	}
+
+	static <T, R> FieldValidator<T, R> fromValidator(
+		String fieldName, Validator<T, R> validator) {
+
+		return input -> validator.validate(input.t);
 
 	}
 
@@ -63,15 +67,15 @@ public interface FieldValidator<T, R>
 	default <S> FieldValidator<T, S> compose(FieldValidator<R, S> validator) {
 		return field -> (Validation<S>)
 			validate(field).
-				flatMap(i -> validator.validate(new Field<>(i.toString(), i)));
+				flatMap(i -> validator.validate(new Field<>(field.name, i)));
 	}
 
-	default <S> FieldValidator<T, S> fmap(Function1<R, S> fun) {
+	default <S> FieldValidator<T, S> map(Function<R, S> fun) {
 
 		return field -> {
 			Validation<R> result = validate(field);
 
-			return (Validation<S>)result.fmap(fun);
+			return (Validation<S>)result.map(fun);
 		};
 	}
 
@@ -150,13 +154,13 @@ public interface FieldValidator<T, R>
 			}
 			else {
 				return (Validation<Optional<T>>)
-					validator.validate(field.fmap(Optional::get)).
-					fmap(Optional::of);
+					validator.validate(field.map(Optional::get)).
+						map(Optional::of);
 			}
 		};
 	}
 
-	FieldValidator<String, Integer> safeInt = isANumber.fmap(Integer::parseInt);
+	FieldValidator<String, Integer> safeInt = isANumber.map(Integer::parseInt);
 
 	static <T> FieldValidator<Optional<T>, T> notEmpty() {
 		return field -> {

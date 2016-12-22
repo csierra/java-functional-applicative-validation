@@ -14,12 +14,9 @@ package com.liferay.functional; /**
 
 import com.liferay.functional.Validation.Failure;
 import com.liferay.functional.Validation.Success;
-import javaslang.Function1;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -27,7 +24,7 @@ import java.util.function.Predicate;
 /**
  * @author Carlos Sierra Andrés
  */
-public interface Validator<T, R> extends Functor<R>{
+public interface Validator<T, R> {
 
 	Validation<R> validate(T input);
 
@@ -36,12 +33,12 @@ public interface Validator<T, R> extends Functor<R>{
 			o -> other.validate(input));
 	}
 
-	default <S> Validator<T, S> fmap(Function1<R, S> fun) {
+	default <S> Validator<T, S> map(Function<R, S> fun) {
 
 		return input -> {
 			Validation<R> result = validate(input);
 
-			return (Validation<S>)result.fmap(fun);
+			return (Validation<S>)result.map(fun);
 		};
 	}
 
@@ -109,7 +106,7 @@ public interface Validator<T, R> extends Functor<R>{
 		);
 	}
 
-	static Validator<String, String> endsWith (String suffix) {
+	static Validator<String, String> endsWith(String suffix) {
 		return predicate(
 			input -> input.endsWith(suffix),
 			input -> input + " should start with " + suffix
@@ -125,13 +122,13 @@ public interface Validator<T, R> extends Functor<R>{
 			}
 			else {
 				return (Validation<Optional<T>>)
-					validator.validate(input.get()).fmap(Optional::of);
+					validator.validate(input.get()).map(Optional::of);
 			}
 		};
 	}
 
 	Validator<String, Integer> safeInt =
-		isANumber.fmap(Integer::parseInt);
+		isANumber.map(Integer::parseInt);
 
 	static <T> Validator<Optional<T>, T> notEmpty() {
 		return input -> {
@@ -177,70 +174,6 @@ public interface Validator<T, R> extends Functor<R>{
 				", middle=" + middle +
 				'}';
 		}
-	}
-
-	static void main(String[] args) {
-//		Validator<String, Integer> mayorDeEdad = safeInt.compose(
-//			greaterThan(18).and(lowerThan(90)));
-//
-//		Validator<Optional<String>, String> dni =
-//			isThere(String.class).compose(hasLength(9).and(endsWith("D")));
-//
-//		ValidationResult<String> safeDni = dni.validate(
-//			Optional.of("50211539D"));
-//
-//		ValidationResult<MyClass> result =
-//			(ValidationResult<MyClass>)Applicative.lift(
-//				MyClass::new, mayorDeEdad.validate("15"), safeDni
-//			);
-//
-//		System.out.println(result);
-
-		Validator<String, Integer> safeInt = isANumber.fmap(Integer::parseInt);
-
-		Validator<Optional<String>, Integer> isThereAnInteger =
-			Validator.<String>notEmpty().compose(safeInt);
-
-		Validator<Optional<String>, Integer> safeDay =
-			isThereAnInteger.compose(
-					lowerThan(32).and(greaterThan(0)));
-
-		Validator<Optional<String>, Integer> safeMonth =
-			isThereAnInteger.compose(
-					lowerThan(13).and(greaterThan(0))).fmap(x -> x - 1);
-
-		Validator<Optional<String>, Integer> safeYear =
-			isThereAnInteger.compose(
-					lowerThan(10000).and(greaterThan(1900))).fmap(x -> x - 1900);
-
-		System.out.println(
-			Applicative.lift(
-				GregorianCalendar::new,
-				safeYear.validate(Optional.of("pepe")),
-				safeMonth.validate(Optional.of("8")),
-				safeDay.validate(Optional.empty())).
-			fmap(GregorianCalendar::getTime));
-
-		Validation<User> carlos = (Validation<User>)
-			Applicative.lift(
-				User::new,
-				new Success<>("carlos"),
-				ifPresent(
-					longerThan(2)).validate(Optional.of("jr.")),
-				Applicative.lift(
-					GregorianCalendar::new,
-					safeYear.validate(Optional.of("1979")),
-					safeMonth.validate(Optional.of("8")),
-					safeDay.validate(Optional.of("11"))).
-					fmap(GregorianCalendar::getTime));
-
-		if (carlos.isPresent()) {
-			System.out.println("YAY: " + carlos.get().toString());
-		}
-		else {
-			System.out.println("BOOOH:" + Arrays.asList(carlos.failures()));
-		}
-
 	}
 
 }

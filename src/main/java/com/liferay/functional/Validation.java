@@ -12,22 +12,26 @@ package com.liferay.functional; /**
  * details.
  */
 
-import javaslang.Function1;
-
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Function;
 
 /**
  * @author Carlos Sierra Andrés
  */
-public interface Validation<T> extends DefaultValidation<T> {
+public interface Validation<T> {
 
 	public boolean isPresent();
 
 	public T get();
 
 	public Set<String> failures();
+
+	public <S> Validation<S> map(Function<T, S> fun);
+
+	public <S, U> Validation<U> apply(Validation<S> ap);
+
+	public <S> Validation<S> flatMap(Function<T, Validation<S>> fun);
 
 	class Success<T> implements Validation<T> {
 
@@ -37,18 +41,16 @@ public interface Validation<T> extends DefaultValidation<T> {
 			_t = t;
 		}
 
-		@Override
-		public <S> Applicative<Validation<?>, S> fmap(
-			Function1<T, S> fun) {
+		public <S> Validation<S> map(
+			Function<T, S> fun) {
 
 			return new Success<>(fun.apply(_t));
 		}
 
 		@Override
-		public <S, U> Applicative<Validation<?>, U> apply(
-			Applicative<Validation<?>, S> ap) {
+		public <S, U> Validation<U> apply(Validation<S> ap) {
 
-			return ap.fmap((Function1<S, U>)_t);
+			return ap.map((Function<S, U>)_t);
 		}
 
 		@Override
@@ -56,10 +58,8 @@ public interface Validation<T> extends DefaultValidation<T> {
 			return "Success {" + _t + '}';
 		}
 
-
-		@Override
-		public <S> Monad<Validation<?>, S> flatMap(
-			Function1<T, Monad<Validation<?>, S>> fun) {
+		public <S> Validation<S> flatMap(
+			Function<T, Validation<S>> fun) {
 
 			return fun.apply(_t);
 		}
@@ -78,6 +78,7 @@ public interface Validation<T> extends DefaultValidation<T> {
 		public Set<String> failures() {
 			return null;
 		}
+
 	}
 
 	class Failure<T> implements Validation<T> {
@@ -89,15 +90,13 @@ public interface Validation<T> extends DefaultValidation<T> {
 		}
 
 		@Override
-		public <S> Applicative<Validation<?>, S> fmap(
-			Function1<T, S> fun) {
+		public <S> Validation<S> map(
+			Function<T, S> fun) {
 
 			return (Validation)this;
 		}
 
-		@Override
-		public <S, U> Applicative<Validation<?>, U> apply(
-			Applicative<Validation<?>, S> ap) {
+		public <S, U> Validation<U> apply(Validation<S> ap) {
 
 			if (ap instanceof Failure) {
 				Failure failure = (Failure) ap;
@@ -121,8 +120,8 @@ public interface Validation<T> extends DefaultValidation<T> {
 		}
 
 		@Override
-		public <S> Monad<Validation<?>, S> flatMap(
-			Function1<T, Monad<Validation<?>, S>> fun) {
+		public <S> Validation<S> flatMap(
+			Function<T, Validation<S>> fun) {
 
 			return (Validation<S>)this;
 		}
@@ -143,16 +142,104 @@ public interface Validation<T> extends DefaultValidation<T> {
 		}
 	}
 
-	static void main(String[] args) {
-		Validation<MyClass> carlos =
-			(Validation<MyClass>)Applicative.lift(
-				MyClass::new,
-					new Failure<>(Collections.singleton("Age must be a number")),
-					new Failure<>(Collections.singleton("DNI must have 9 digits")));
-
-		System.out.println(carlos);
+	public static <A, B, RESULT> Validation<RESULT> apply(Function2<A, B, RESULT> fun, Validation<A> a, Validation<B> b) {
+		return a.map(fun.curried()).apply(b);
 	}
 
+	public static <A, B, C, RESULT> Validation<RESULT> apply(Function3<A, B, C, RESULT> fun, Validation<A> a, Validation<B> b, Validation<C> c) {
+		return a.map(fun.curried()).apply(b).apply(c);
+	}
 
+	public static <A, B, C, D, RESULT> Validation<RESULT> apply(Function4<A, B, C, D, RESULT> fun, Validation<A> a, Validation<B> b, Validation<C> c, Validation<D> d) {
+		return a.map(fun.curried()).apply(b).apply(c).apply(d);
+	}
+
+	public static <A, B, C, D, E, RESULT> Validation<RESULT> apply(Function5<A, B, C, D, E, RESULT> fun, Validation<A> a, Validation<B> b, Validation<C> c, Validation<D> d, Validation<E> e) {
+		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e);
+	}
+
+	public static <A, B, C, D, E, F, RESULT> Validation<RESULT> apply(Function6<A, B, C, D, E, F, RESULT> fun, Validation<A> a, Validation<B> b, Validation<C> c, Validation<D> d, Validation<E> e, Validation<F> f) {
+		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f);
+	}
+
+	public static <A, B, C, D, E, F, G, RESULT> Validation<RESULT> apply(Function7<A, B, C, D, E, F, G, RESULT> fun, Validation<A> a, Validation<B> b, Validation<C> c, Validation<D> d, Validation<E> e, Validation<F> f, Validation<G> g) {
+		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g);
+	}
+
+	public static <A, B, C, D, E, F, G, H, RESULT> Validation<RESULT> apply(Function8<A, B, C, D, E, F, G, H, RESULT> fun, Validation<A> a, Validation<B> b, Validation<C> c, Validation<D> d, Validation<E> e, Validation<F> f, Validation<G> g, Validation<H> h) {
+		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h);
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, RESULT> Validation<RESULT> apply(Function9<A, B, C, D, E, F, G, H, I, RESULT> fun, Validation<A> a, Validation<B> b, Validation<C> c, Validation<D> d, Validation<E> e, Validation<F> f, Validation<G> g, Validation<H> h, Validation<I> i) {
+		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i);
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, RESULT> Validation<RESULT> apply(Function10<A, B, C, D, E, F, G, H, I, J, RESULT> fun, Validation<A> a, Validation<B> b, Validation<C> c, Validation<D> d, Validation<E> e, Validation<F> f, Validation<G> g, Validation<H> h, Validation<I> i, Validation<J> j) {
+		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j);
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, RESULT> Validation<RESULT> apply(Function11<A, B, C, D, E, F, G, H, I, J, K, RESULT> fun, Validation<A> a, Validation<B> b, Validation<C> c, Validation<D> d, Validation<E> e, Validation<F> f, Validation<G> g, Validation<H> h, Validation<I> i, Validation<J> j, Validation<K> k) {
+		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k);
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, RESULT> Validation<RESULT> apply(Function12<A, B, C, D, E, F, G, H, I, J, K, L, RESULT> fun, Validation<A> a, Validation<B> b, Validation<C> c, Validation<D> d, Validation<E> e, Validation<F> f, Validation<G> g, Validation<H> h, Validation<I> i, Validation<J> j, Validation<K> k, Validation<L> l) {
+		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l);
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, RESULT> Validation<RESULT> apply(Function13<A, B, C, D, E, F, G, H, I, J, K, L, M, RESULT> fun, Validation<A> a, Validation<B> b, Validation<C> c, Validation<D> d, Validation<E> e, Validation<F> f, Validation<G> g, Validation<H> h, Validation<I> i, Validation<J> j, Validation<K> k, Validation<L> l, Validation<M> m) {
+		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m);
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, RESULT> Validation<RESULT> apply(Function14<A, B, C, D, E, F, G, H, I, J, K, L, M, N, RESULT> fun, Validation<A> a, Validation<B> b, Validation<C> c, Validation<D> d, Validation<E> e, Validation<F> f, Validation<G> g, Validation<H> h, Validation<I> i, Validation<J> j, Validation<K> k, Validation<L> l, Validation<M> m, Validation<N> n) {
+		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n);
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, RESULT> Validation<RESULT> apply(Function15<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, RESULT> fun, Validation<A> a, Validation<B> b, Validation<C> c, Validation<D> d, Validation<E> e, Validation<F> f, Validation<G> g, Validation<H> h, Validation<I> i, Validation<J> j, Validation<K> k, Validation<L> l, Validation<M> m, Validation<N> n, Validation<O> o) {
+		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o);
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, RESULT> Validation<RESULT> apply(Function16<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, RESULT> fun, Validation<A> a, Validation<B> b, Validation<C> c, Validation<D> d, Validation<E> e, Validation<F> f, Validation<G> g, Validation<H> h, Validation<I> i, Validation<J> j, Validation<K> k, Validation<L> l, Validation<M> m, Validation<N> n, Validation<O> o, Validation<P> p) {
+		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p);
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, RESULT> Validation<RESULT> apply(Function17<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, RESULT> fun, Validation<A> a, Validation<B> b, Validation<C> c, Validation<D> d, Validation<E> e, Validation<F> f, Validation<G> g, Validation<H> h, Validation<I> i, Validation<J> j, Validation<K> k, Validation<L> l, Validation<M> m, Validation<N> n, Validation<O> o, Validation<P> p, Validation<Q> q) {
+		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q);
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, RESULT> Validation<RESULT> apply(Function18<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, RESULT> fun, Validation<A> a, Validation<B> b, Validation<C> c, Validation<D> d, Validation<E> e, Validation<F> f, Validation<G> g, Validation<H> h, Validation<I> i, Validation<J> j, Validation<K> k, Validation<L> l, Validation<M> m, Validation<N> n, Validation<O> o, Validation<P> p, Validation<Q> q, Validation<R> r) {
+		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r);
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, RESULT> Validation<RESULT> apply(Function19<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, RESULT> fun, Validation<A> a, Validation<B> b, Validation<C> c, Validation<D> d, Validation<E> e, Validation<F> f, Validation<G> g, Validation<H> h, Validation<I> i, Validation<J> j, Validation<K> k, Validation<L> l, Validation<M> m, Validation<N> n, Validation<O> o, Validation<P> p, Validation<Q> q, Validation<R> r, Validation<S> s) {
+		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s);
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, RESULT> Validation<RESULT> apply(Function20<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, RESULT> fun, Validation<A> a, Validation<B> b, Validation<C> c, Validation<D> d, Validation<E> e, Validation<F> f, Validation<G> g, Validation<H> h, Validation<I> i, Validation<J> j, Validation<K> k, Validation<L> l, Validation<M> m, Validation<N> n, Validation<O> o, Validation<P> p, Validation<Q> q, Validation<R> r, Validation<S> s, Validation<T> t) {
+		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s).apply(t);
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, RESULT> Validation<RESULT> apply(Function21<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, RESULT> fun, Validation<A> a, Validation<B> b, Validation<C> c, Validation<D> d, Validation<E> e, Validation<F> f, Validation<G> g, Validation<H> h, Validation<I> i, Validation<J> j, Validation<K> k, Validation<L> l, Validation<M> m, Validation<N> n, Validation<O> o, Validation<P> p, Validation<Q> q, Validation<R> r, Validation<S> s, Validation<T> t, Validation<U> u) {
+		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s).apply(t).apply(u);
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, RESULT> Validation<RESULT> apply(Function22<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, RESULT> fun, Validation<A> a, Validation<B> b, Validation<C> c, Validation<D> d, Validation<E> e, Validation<F> f, Validation<G> g, Validation<H> h, Validation<I> i, Validation<J> j, Validation<K> k, Validation<L> l, Validation<M> m, Validation<N> n, Validation<O> o, Validation<P> p, Validation<Q> q, Validation<R> r, Validation<S> s, Validation<T> t, Validation<U> u, Validation<V> v) {
+		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s).apply(t).apply(u).apply(v);
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, RESULT> Validation<RESULT> apply(Function23<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, RESULT> fun, Validation<A> a, Validation<B> b, Validation<C> c, Validation<D> d, Validation<E> e, Validation<F> f, Validation<G> g, Validation<H> h, Validation<I> i, Validation<J> j, Validation<K> k, Validation<L> l, Validation<M> m, Validation<N> n, Validation<O> o, Validation<P> p, Validation<Q> q, Validation<R> r, Validation<S> s, Validation<T> t, Validation<U> u, Validation<V> v, Validation<W> w) {
+		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s).apply(t).apply(u).apply(v).apply(w);
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, RESULT> Validation<RESULT> apply(Function24<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, RESULT> fun, Validation<A> a, Validation<B> b, Validation<C> c, Validation<D> d, Validation<E> e, Validation<F> f, Validation<G> g, Validation<H> h, Validation<I> i, Validation<J> j, Validation<K> k, Validation<L> l, Validation<M> m, Validation<N> n, Validation<O> o, Validation<P> p, Validation<Q> q, Validation<R> r, Validation<S> s, Validation<T> t, Validation<U> u, Validation<V> v, Validation<W> w, Validation<X> x) {
+		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s).apply(t).apply(u).apply(v).apply(w).apply(x);
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, RESULT> Validation<RESULT> apply(Function25<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, RESULT> fun, Validation<A> a, Validation<B> b, Validation<C> c, Validation<D> d, Validation<E> e, Validation<F> f, Validation<G> g, Validation<H> h, Validation<I> i, Validation<J> j, Validation<K> k, Validation<L> l, Validation<M> m, Validation<N> n, Validation<O> o, Validation<P> p, Validation<Q> q, Validation<R> r, Validation<S> s, Validation<T> t, Validation<U> u, Validation<V> v, Validation<W> w, Validation<X> x, Validation<Y> y) {
+		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s).apply(t).apply(u).apply(v).apply(w).apply(x).apply(y);
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, RESULT> Validation<RESULT> apply(Function26<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, RESULT> fun, Validation<A> a, Validation<B> b, Validation<C> c, Validation<D> d, Validation<E> e, Validation<F> f, Validation<G> g, Validation<H> h, Validation<I> i, Validation<J> j, Validation<K> k, Validation<L> l, Validation<M> m, Validation<N> n, Validation<O> o, Validation<P> p, Validation<Q> q, Validation<R> r, Validation<S> s, Validation<T> t, Validation<U> u, Validation<V> v, Validation<W> w, Validation<X> x, Validation<Y> y, Validation<Z> z) {
+		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s).apply(t).apply(u).apply(v).apply(w).apply(x).apply(y).apply(z);
+	}
 
 }
