@@ -14,12 +14,7 @@
 
 package com.liferay.functional;
 
-import java.util.HashMap;
 import java.util.Optional;
-
-import static com.liferay.functional.Validator.apply;
-import static com.liferay.functional.Validator.hasLength;
-import static com.liferay.functional.Validator.isANumber;
 
 /**
  * @author Carlos Sierra Andrés
@@ -35,50 +30,6 @@ public interface StringProvider extends FieldProvider<String> {
 
     public static String met(String a, String b) {
         return a + b;
-    }
-
-    public class User {
-        String name;
-        int age;
-
-        public User(int age, String name) {
-            this.age = age;
-            this.name = name;
-        }
-
-        @Override
-        public String toString() {
-            return "User{" +
-                "age=" + age +
-                ", name='" + name + '\'' +
-                '}';
-        }
-
-    }
-
-    public static void main(String[] args) {
-
-        Validator<StringProvider, String> safeName = StringProvider.adapt(
-            "name", Validator.notEmpty());
-
-        Validator<Optional<String>, Integer> validator =
-            Validator.<String>notEmpty().compose(isANumber).map(
-                Integer::parseInt);
-
-        Validator<StringProvider, Integer> safeAge = StringProvider.adapt(
-            "age", validator);
-
-        HashMap<String, String> map = new HashMap<>();
-        map.put("name", "Carlos");
-        map.put("age", "pepe");
-
-        Validator<StringProvider, User> userValidator = apply(
-            User::new, safeAge, safeName);
-
-        Validation<User> validation = userValidator.validate(
-            key -> Optional.ofNullable(map.get(key)));
-
-        System.out.println(validation);
     }
 
 }

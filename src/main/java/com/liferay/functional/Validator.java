@@ -29,8 +29,9 @@ public interface Validator<T, R> extends Applicative<Validator, R>{
 	Validation<R> validate(T input);
 
 	default Validator<T, R> and(Validator<T, R> other) {
-		return input -> (Validation<R>)validate(input).flatMap(
-			o -> other.validate(input));
+		return input ->
+			this.validate(input).map(x -> (Function)(y -> y)).apply(
+				other.validate(input));
 	}
 
 	default <S> Validator<T, S> map(Function<R, S> fun) {
@@ -40,6 +41,10 @@ public interface Validator<T, R> extends Applicative<Validator, R>{
 
 			return (Validation<S>)result.map(fun);
 		};
+	}
+
+	static <T> Validator<T, T> partial(Validator<T, ?> part) {
+		return input -> part.validate(input).map(ign -> input);
 	}
 
 	@Override
@@ -154,8 +159,7 @@ public interface Validator<T, R> extends Applicative<Validator, R>{
 		};
 	}
 
-	Validator<String, Integer> safeInt =
-		isANumber.map(Integer::parseInt);
+	Validator<String, Integer> safeInt = isANumber.map(Integer::parseInt);
 
 	static <T> Validator<Optional<T>, T> notEmpty() {
 		return input -> {
