@@ -14,20 +14,11 @@
 
 package com.liferay.functional;
 
-import java.util.Optional;
-
 /**
  * @author Carlos Sierra Andrés
  */
-public interface FieldProvider<T> {
+public interface Monoid<T extends Monoid> {
 
-    Optional<T> get(String name);
+    Monoid<T> mappend(Monoid<T> other);
 
-    static <T, S> Validator<? extends FieldProvider<T>, S> adapt(
-        String name, Validator<Optional<T>, S> validator) {
-
-        return validator.adapt(
-            fp -> fp.get(name),
-            f -> "While validating field '" + name + "':" + f);
-    }
 }

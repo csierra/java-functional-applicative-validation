@@ -12,24 +12,27 @@
  * details.
  */
 
-package com.liferay.functional;
+package com.liferay.functional.fieldprovider;
+
+import com.liferay.functional.Monoid;
+import com.liferay.functional.validation.Validator;
 
 import java.util.Optional;
+import java.util.function.BiFunction;
 
 /**
  * @author Carlos Sierra Andrés
  */
 public interface StringProvider extends FieldProvider<String> {
 
-    static <S> Validator<StringProvider, S> adapt(
-        String name, Validator<Optional<String>, S> validator) {
+    static <S, F extends Monoid<F>, F2 extends Monoid<F2>>
 
-        return (Validator<StringProvider, S>) FieldProvider.adapt(
-            name, validator);
-    }
+    Validator<? extends StringProvider, S, F2> adapt(
+        String name, Validator<Optional<String>, S, F> validator,
+        BiFunction<String, F, F2> errors) {
 
-    public static String met(String a, String b) {
-        return a + b;
+        return validator.adapt(
+            fp -> fp.get(name), f -> errors.apply(name, f));
     }
 
 }
