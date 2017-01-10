@@ -44,36 +44,24 @@ public interface FieldProvider<F extends Monoid<F>> {
         };
     }
 
-    interface SafeGetter<F extends Monoid<F>, F2 extends Monoid<F2>> {
-        <T, R> Validation<R, F2> safeGet(
-            String fieldName, Class<T> clazz, Validator<T, R, F> validator);
+    interface SafeGetter<F2 extends Monoid<F2>, F extends Monoid<F>> {
+        <T, R> Validation<R, F> safeGet(
+            String fieldName, Class<T> clazz, Validator<T, R, F2> validator);
     }
 
-    default <F2 extends Monoid<F2>> SafeGetter<F, F2> getSafeGetter(
-        Function2<String, F, F2> map) {
+    default <F2 extends Monoid<F2>> SafeGetter<F2, F> getSafeGetter(
+        Function2<String, F2, F> map) {
 
-        return new SafeGetter<F, F2>() {
-            @Override
-            public <T, R> Validation<R, F2> safeGet(
-                String fieldName, Class<T> clazz,
-                Validator<T, R, F> validator) {
-
-                return get(fieldName, clazz).flatMap(validator).
-                    mapFailures(map.curried().apply(fieldName));
-            }
-        };
-    }
-
-    default SafeGetter<F, F> getSafeGetter() {
-
-        return new SafeGetter<F, F>() {
+        return new SafeGetter<F2, F>() {
             @Override
             public <T, R> Validation<R, F> safeGet(
                 String fieldName, Class<T> clazz,
-                Validator<T, R, F> validator) {
+                Validator<T, R, F2> validator) {
 
-                return get(fieldName, clazz).flatMap(validator);
+                return get(fieldName, clazz).flatMap(
+                    validator.adapt(x -> x, map.curried().apply(fieldName)));
             }
+
         };
     }
 
