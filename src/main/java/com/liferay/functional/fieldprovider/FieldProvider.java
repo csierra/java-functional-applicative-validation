@@ -14,26 +14,67 @@
 
 package com.liferay.functional.fieldprovider;
 
+import com.liferay.functional.Function2;
 import com.liferay.functional.Monoid;
+import com.liferay.functional.validation.Validation;
 import com.liferay.functional.validation.Validator;
 
-import java.util.Optional;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * @author Carlos Sierra Andrés
  */
-public interface FieldProvider<T> {
+public interface FieldProvider<F extends Monoid<F>> {
 
-    Optional<T> get(String name);
+    public <T> Validation<T, F> get(String name, Class<T> clazz);
 
-    static <T, S, F extends Monoid<F>, F2 extends Monoid<F2>>
-    Validator<? extends FieldProvider<T>, S, F2> adapt(
-        String name, Validator<Optional<T>, S, F> validator,
-        BiFunction<String, F, F2> errors) {
+    Validation<FieldProvider<F>, F> getProvider(String name);
 
-        return validator.adapt(
-            fp -> fp.get(name), f -> errors.apply(name, f));
+    static <T, F extends Monoid<F>> SafeCast<T, F> safeCast(
+        Class<T> clazz, Function<String, F> error) {
+
+        return input -> {
+            try {
+                return new Validation.Success<>(clazz.cast(input));
+            }
+            catch (ClassCastException cce) {
+                return new Validation.Failure<>(
+                    error.apply("can't be casted to " + clazz));
+            }
+        };
+    }
+
+    interface SafeGetter<F extends Monoid<F>, F2 extends Monoid<F2>> {
+        <T, R> Validation<R, F2> safeGet(
+            String fieldName, Class<T> clazz, Validator<T, R, F> validator);
+    }
+
+    default <F2 extends Monoid<F2>> SafeGetter<F, F2> getSafeGetter(
+        Function2<String, F, F2> map) {
+
+        return new SafeGetter<F, F2>() {
+            @Override
+            public <T, R> Validation<R, F2> safeGet(
+                String fieldName, Class<T> clazz,
+                Validator<T, R, F> validator) {
+
+                return get(fieldName, clazz).flatMap(validator).
+                    mapFailures(map.curried().apply(fieldName));
+            }
+        };
+    }
+
+    default SafeGetter<F, F> getSafeGetter() {
+
+        return new SafeGetter<F, F>() {
+            @Override
+            public <T, R> Validation<R, F> safeGet(
+                String fieldName, Class<T> clazz,
+                Validator<T, R, F> validator) {
+
+                return get(fieldName, clazz).flatMap(validator);
+            }
+        };
     }
 
 }

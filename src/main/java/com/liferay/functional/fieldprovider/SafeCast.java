@@ -17,26 +17,11 @@ package com.liferay.functional.fieldprovider;
 import com.liferay.functional.Monoid;
 import com.liferay.functional.validation.Validator;
 
-import java.util.Optional;
-import java.util.function.BiFunction;
-
 /**
  * @author Carlos Sierra Andrés
  */
-public interface StringProvider  {
+public interface SafeCast<T, F extends Monoid<F>>
+    extends Validator<Object, T, F> {
 
-//    @SuppressWarnings("unchecked")
-//    @Override
-//    Optional<String> get(String name);
-//
-//    static <S, F extends Monoid<F>, F2 extends Monoid<F2>>
-//
-//    Validator<? extends StringProvider, S, F2> adapt(
-//        String name, Validator<Optional<String>, S, F> validator,
-//        BiFunction<String, F, F2> errors) {
-//
-//        return validator.adapt(
-//            fp -> fp.get(name), f -> errors.apply(name, f));
-//    }
 
 }
