@@ -44,15 +44,15 @@ public interface FieldProvider<F extends Monoid<F>> {
         };
     }
 
-    interface SafeGetter<F2 extends Monoid<F2>, F extends Monoid<F>> {
+    interface Adaptor<F2 extends Monoid<F2>, F extends Monoid<F>> {
         <T, R> Validation<R, F> safeGet(
             String fieldName, Class<T> clazz, Validator<T, R, F2> validator);
     }
 
-    default <F2 extends Monoid<F2>> SafeGetter<F2, F> getSafeGetter(
+    default <F2 extends Monoid<F2>> Adaptor<F2, F> getAdaptor(
         Function2<String, F2, F> map) {
 
-        return new SafeGetter<F2, F>() {
+        return new Adaptor<F2, F>() {
             @Override
             public <T, R> Validation<R, F> safeGet(
                 String fieldName, Class<T> clazz,

@@ -15,14 +15,13 @@
 package com.liferay.functional.validation;
 
 import com.liferay.functional.Function2;
-import com.liferay.functional.Monoid;
+import com.liferay.functional.fieldprovider.FieldFail;
 import com.liferay.functional.fieldprovider.FieldProvider;
-import com.liferay.functional.fieldprovider.FieldProvider.SafeGetter;
+import com.liferay.functional.fieldprovider.FieldProvider.Adaptor;
 import com.liferay.functional.validation.Validation.Failure;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -73,60 +72,6 @@ public class FieldProviderTest {
         }
     }
 
-    static class FieldFail implements Monoid<FieldFail> {
-        final Map<String, Collection<Fail>> _failures;
-
-        public FieldFail(Map<String, Collection<Fail>> failures) {
-            _failures = failures;
-        }
-
-        public FieldFail(String field, Collection<Fail> fails) {
-            this();
-
-            _failures.put(field, fails);
-        }
-
-        public FieldFail() {
-            _failures = new HashMap<>();
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            FieldFail fieldFail = (FieldFail) o;
-
-            return _failures.equals(fieldFail._failures);
-
-        }
-
-        @Override
-        public int hashCode() {
-            return _failures.hashCode();
-        }
-
-        public FieldFail(String field, String message) {
-            this(field, Collections.singletonList(new Fail(message)));
-        }
-
-        @Override
-        public FieldFail mappend(Monoid<FieldFail> other) {
-            FieldFail fieldFail = new FieldFail(_failures);
-
-            fieldFail._failures.putAll(((FieldFail)other)._failures);
-
-            return fieldFail;
-        }
-
-        @Override
-        public String toString() {
-            return "FieldFail{" +
-                "_failures=" + _failures +
-                '}';
-        }
-    }
-
     @Test
     public void testFieldProvider() {
         HashMap<String, Object> map = new HashMap<>();
@@ -140,12 +85,12 @@ public class FieldProviderTest {
             predicate(
                 s -> s.length() > 10, s -> new Fail("must be longer than 10"));
 
-        SafeGetter<Fail, FieldFail> safeGetter = fieldProvider.getSafeGetter(
+        Adaptor<Fail, FieldFail> adaptor = fieldProvider.getAdaptor(
             (field, fail) ->
                 new FieldFail(field, Collections.singletonList(fail)));
 
         Validation<String, FieldFail> validation =
-            safeGetter.safeGet("test", String.class, longerThan10);
+            adaptor.safeGet("test", String.class, longerThan10);
 
         Assert.assertEquals(
             new Validation.Success<>("testValueLongerThan10"), validation);
@@ -162,12 +107,12 @@ public class FieldProviderTest {
             predicate(
                 s -> s.length() > 10, s -> new Fail("must be longer than 10"));
 
-        SafeGetter<Fail, FieldFail> safeGetter = fieldProvider.getSafeGetter(
+        Adaptor<Fail, FieldFail> adaptor = fieldProvider.getAdaptor(
             (field, fail) ->
                 new FieldFail(field, Collections.singletonList(fail)));
 
         Validation<String, FieldFail> validation =
-            safeGetter.safeGet("test", String.class, longerThan10);
+            adaptor.safeGet("test", String.class, longerThan10);
 
         Assert.assertEquals(
             new Failure<String, FieldFail>(
@@ -188,12 +133,12 @@ public class FieldProviderTest {
             predicate(
                 s -> s.length() > 10, s -> new Fail("must be longer than 10"));
 
-        SafeGetter<Fail, FieldFail> safeGetter = fieldProvider.getSafeGetter(
+        Adaptor<Fail, FieldFail> adaptor = fieldProvider.getAdaptor(
             (field, fail) ->
                 new FieldFail(field, Collections.singletonList(fail)));
 
         Validation<String, FieldFail> validation =
-            safeGetter.safeGet("test", String.class, longerThan10);
+            adaptor.safeGet("test", String.class, longerThan10);
 
         Assert.assertEquals(
             new Failure<String, FieldFail>(
@@ -221,14 +166,14 @@ public class FieldProviderTest {
         Validation<String, FieldFail> validation =
             fieldProvider.getProvider("nested").flatMap(
                 fp -> {
-                SafeGetter<Fail, FieldFail> safeGetter =
-                    fp.getSafeGetter(
+                Adaptor<Fail, FieldFail> adaptor =
+                    fp.getAdaptor(
                         (field, fail) ->
                             new FieldFail(
                                 field, Collections.singletonList(fail)));
 
 
-                return safeGetter.safeGet("test", String.class, longerThan10);
+                return adaptor.safeGet("test", String.class, longerThan10);
             });
 
         Assert.assertEquals(
@@ -248,13 +193,13 @@ public class FieldProviderTest {
 
         Validation<String, FieldFail> validation =
             fieldProvider.getProvider("nested").flatMap(fp -> {
-                SafeGetter<Fail, FieldFail> safeGetter =
-                    fp.getSafeGetter(
+                Adaptor<Fail, FieldFail> adaptor =
+                    fp.getAdaptor(
                         (field, fail) ->
                             new FieldFail(
                                 field, Collections.singletonList(fail)));
 
-                return safeGetter.safeGet("test", String.class, longerThan10);
+                return adaptor.safeGet("test", String.class, longerThan10);
             });
 
         Assert.assertEquals(
@@ -278,13 +223,13 @@ public class FieldProviderTest {
 
         Validation<String, FieldFail> validation =
             fieldProvider.getProvider("nested").flatMap(fp -> {
-                SafeGetter<Fail, FieldFail> safeGetter =
-                    fp.getSafeGetter(
+                Adaptor<Fail, FieldFail> adaptor =
+                    fp.getAdaptor(
                         (field, fail) ->
                             new FieldFail(
                                 field, Collections.singletonList(fail)));
 
-                return safeGetter.safeGet("test", String.class, longerThan10);
+                return adaptor.safeGet("test", String.class, longerThan10);
             });
 
         Assert.assertEquals(
