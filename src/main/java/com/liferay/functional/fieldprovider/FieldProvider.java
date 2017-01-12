@@ -26,7 +26,7 @@ import java.util.function.Function;
  */
 public interface FieldProvider<F extends Monoid<F>> {
 
-    public <T> Validation<T, F> get(String name, Class<T> clazz);
+    <T> Validation<T, F> get(String name, Class<T> clazz);
 
     Validation<FieldProvider<F>, F> getProvider(String name);
 
@@ -47,6 +47,47 @@ public interface FieldProvider<F extends Monoid<F>> {
     interface Adaptor<F2 extends Monoid<F2>, F extends Monoid<F>> {
         <T, R> Validation<R, F> safeGet(
             String fieldName, Class<T> clazz, Validator<T, R, F2> validator);
+
+        Validation<Adaptor<F2, F>, F> getAdaptor(String fieldName);
+
+        static <T, R, F2 extends Monoid<F2>, F extends Monoid<F>>
+        Validation<R, F> safeGet(
+            Adaptor<F2, F>adaptor, String fieldName,
+            Class<T> clazz, Validator<T, R, F2> validator) {
+
+            return adaptor.safeGet(fieldName, clazz, validator);
+        }
+
+        static <T, R, F2 extends Monoid<F2>, F extends Monoid<F>>
+            Validation<R, F> safeGet(
+                Validation<Adaptor<F2, F>, F> adaptor, String fieldName,
+                Class<T> clazz, Validator<T, R, F2> validator) {
+
+            return adaptor.flatMap(a -> a.safeGet(fieldName, clazz, validator));
+        }
+
+        static <T, R, F2 extends Monoid<F2>, F extends Monoid<F>>
+            Validation<Adaptor<F2, F>, F> focus(
+            Adaptor<F2, F> adaptor, String ... fields) {
+
+            if (fields.length == 0) {
+                return new Validation.Success<>(adaptor);
+            }
+            Validation<Adaptor<F2, F>, F> current = adaptor.getAdaptor(
+                fields[0]);
+
+            if (fields.length == 1) {
+                return current;
+            }
+
+            for (int i = 1; i < fields.length; i++) {
+                String field = fields[i];
+
+                current = current.flatMap(fp -> fp.getAdaptor(field));
+            }
+
+            return current;
+        }
     }
 
     default <F2 extends Monoid<F2>> Adaptor<F2, F> getAdaptor(
@@ -60,6 +101,11 @@ public interface FieldProvider<F extends Monoid<F>> {
 
                 return get(fieldName, clazz).flatMap(
                     validator.adapt(x -> x, map.curried().apply(fieldName)));
+            }
+
+            @Override
+            public Validation<Adaptor<F2, F>, F> getAdaptor(String fieldName) {
+                return getProvider(fieldName).map(fp -> fp.getAdaptor(map));
             }
 
         };
