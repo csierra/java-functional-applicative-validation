@@ -51,7 +51,7 @@ import java.util.function.Predicate;
 /**
  * @author Carlos Sierra Andrés
  */
-public interface Validator<T, R, F extends Monoid<F>> 
+public interface Validator<T, R, F extends Monoid<F>>
 	extends Applicative<Validator, R>, Function<T, Validation<R, F>> {
 
 	Validation<R, F> validate(T input);
@@ -93,6 +93,12 @@ public interface Validator<T, R, F extends Monoid<F>>
 	@Override
 	default <S, U> Validator<T, U, F> apply(Applicative<Validator, S> ap) {
 		return input -> validate(input).apply(
+			((Validator<T, S, F>)ap).validate(input));
+	}
+
+	@Override
+	default <S, U> Validator<T, U, F> flatApply(Applicative<Validator, S> ap) {
+		return input -> validate(input).flatApply(
 			((Validator<T, S, F>)ap).validate(input));
 	}
 

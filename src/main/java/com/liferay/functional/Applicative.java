@@ -23,6 +23,8 @@ public interface Applicative<AP extends Applicative, T> {
 
     <S, U> Applicative<AP, U> apply(Applicative<AP, S> ap);
 
+    <S, U> Applicative<AP, U> flatApply(Applicative<AP, S> ap);
+
     <S> Applicative<AP, S> map(Function<T, S> fun);
 
     public static <AP extends Applicative<AP, ?>, A, B, RESULT> Applicative<AP, RESULT> combine(Function2<A, B, RESULT> fun, Applicative<AP, A> a, Applicative<AP, B> b) {
