@@ -16,64 +16,98 @@ package com.liferay.functional.fieldprovider;
 
 import com.liferay.functional.Function2;
 import com.liferay.functional.Monoid;
+import com.liferay.functional.validation.Fail;
 import com.liferay.functional.validation.Validation;
+import com.liferay.functional.validation.Validation.Failure;
 import com.liferay.functional.validation.Validator;
 
-import java.util.function.Function;
+import java.util.Collections;
+import java.util.Optional;
+
+import static com.liferay.functional.validation.Validation.just;
 
 /**
  * @author Carlos Sierra Andrés
  */
-public interface FieldProvider<F extends Monoid<F>> {
+public interface FieldProvider {
 
-    <T> Validation<T, F> get(String name, Class<T> clazz);
+    <T> Optional<T> get(String name);
 
-    Validation<FieldProvider<F>, F> getProvider(String name);
+    Validator<Object, FieldProvider, Fail> safeFieldProvider();
 
-    static <T, F extends Monoid<F>> SafeCast<T, F> safeCast(
-        Class<T> clazz, Function<String, F> error) {
-
+    static <T> SafeCast<T, Fail> safeCast(Class<T> clazz) {
         return input -> {
             try {
                 return new Validation.Success<>(clazz.cast(input));
             }
             catch (ClassCastException cce) {
-                return new Validation.Failure<>(
-                    error.apply("can't be casted to " + clazz));
+                return new Failure<>(
+                    new Fail("can't be casted to " + clazz));
             }
         };
     }
 
-    interface Adaptor<F2 extends Monoid<F2>, F extends Monoid<F>> {
-        <T, R> Validation<R, F> safeGet(
-            String fieldName, Class<T> clazz, Validator<T, R, F2> validator);
+    public static <T> Validator<Optional<T>, T, Fail> mandatory() {
+        return input -> {
+            if (input.isPresent()) {
+                return just(input.get());
+            }
+            else {
+                return new Failure<>(new Fail("should not be empty"));
+            }
+        };
+    }
 
-        Validation<Adaptor<F2, F>, F> getAdaptor(String fieldName);
+    public static <T> Validator<Optional<T>, Optional<T>, Fail> optional() {
+        return Validation::just;
+    }
 
-        static <T, R, F2 extends Monoid<F2>, F extends Monoid<F>>
-        Validation<R, F> safeGet(
-            Adaptor<F2, F>adaptor, String fieldName,
-            Class<T> clazz, Validator<T, R, F2> validator) {
+    public static <T, R> Validator<Optional<T>, Optional<R>, Fail> ifPresent(
+        Validator<T, R, Fail> validator) {
 
-            return adaptor.safeGet(fieldName, clazz, validator);
+        return input -> {
+            if (input.isPresent()) {
+                return validator.validate(input.get()).map(
+                    Optional::ofNullable);
+            }
+            else {
+                return just(Optional.empty());
+            }
+        };
+
+    }
+
+    interface Adaptor<F extends Monoid<F>> {
+        <T, R> Validation<R, FieldFail> safeGet(
+            String fieldName, Validator<Optional<T>, R, F> validator);
+
+        Validation<Adaptor<F>, FieldFail> getAdaptor(String fieldName);
+
+        static <T, R, F extends Monoid<F>>
+        Validation<R, FieldFail> safeGet(
+            Adaptor<F> adaptor, String fieldName,
+            Validator <Optional<T>, R, F> validator) {
+
+            return adaptor.safeGet(fieldName, validator);
         }
 
-        static <T, R, F2 extends Monoid<F2>, F extends Monoid<F>>
-            Validation<R, F> safeGet(
-                Validation<Adaptor<F2, F>, F> adaptor, String fieldName,
-                Class<T> clazz, Validator<T, R, F2> validator) {
+        static <T, R, F extends Monoid<F>>
+        Validation<R, FieldFail> safeGet(
+            Validation<Adaptor<F>, FieldFail> adaptor, String fieldName,
+            Validator<Optional<T>, R, F> validator) {
 
-            return adaptor.flatMap(a -> a.safeGet(fieldName, clazz, validator));
+            return adaptor.flatMap(a -> a.safeGet(fieldName, validator));
         }
 
-        static <T, R, F2 extends Monoid<F2>, F extends Monoid<F>>
-            Validation<Adaptor<F2, F>, F> focus(
-            Adaptor<F2, F> adaptor, String ... fields) {
+        static <F extends Monoid<F>>
+        Validation<Adaptor<F>, FieldFail> focus(
+            Adaptor<F> adaptor, String ... fields) {
 
             if (fields.length == 0) {
                 return new Validation.Success<>(adaptor);
             }
-            Validation<Adaptor<F2, F>, F> current = adaptor.getAdaptor(
+
+            Validation<Adaptor<F>, FieldFail> current = adaptor.getAdaptor(
                 fields[0]);
 
             if (fields.length == 1) {
@@ -90,24 +124,30 @@ public interface FieldProvider<F extends Monoid<F>> {
         }
     }
 
-    default <F2 extends Monoid<F2>> Adaptor<F2, F> getAdaptor(
-        Function2<String, F2, F> map) {
+    default <F extends Monoid<F>> Adaptor<F> getAdaptor(
+        Function2<String, F, FieldFail> map) {
 
-        return new Adaptor<F2, F>() {
+        return new Adaptor<F>() {
+
             @Override
-            public <T, R> Validation<R, F> safeGet(
-                String fieldName, Class<T> clazz,
-                Validator<T, R, F2> validator) {
+            public <T, R> Validation<R, FieldFail> safeGet(
+                String fieldName, Validator<Optional<T>, R, F> validator) {
 
-                return get(fieldName, clazz).flatMap(
-                    validator.adapt(x -> x, map.curried().apply(fieldName)));
+                return validator.validate(get(fieldName)).mapFailures(
+                    map.curried().apply(fieldName));
             }
 
             @Override
-            public Validation<Adaptor<F2, F>, F> getAdaptor(String fieldName) {
-                return getProvider(fieldName).map(fp -> fp.getAdaptor(map));
-            }
+            public Validation<Adaptor<F>, FieldFail> getAdaptor(
+                String fieldName) {
 
+                return mandatory().
+                    compose(safeFieldProvider()).
+                    validate(get(fieldName)).
+                    mapFailures(
+                        f -> new FieldFail("nested", Collections.singleton(f))).
+                    map(fp -> fp.getAdaptor(map));
+            }
         };
     }
 
