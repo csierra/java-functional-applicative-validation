@@ -27,9 +27,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import static com.liferay.functional.fieldprovider.FieldProvider.Adaptor.focus;
 import static com.liferay.functional.fieldprovider.FieldProvider.mandatory;
 import static com.liferay.functional.fieldprovider.FieldProvider.safeCast;
 import static com.liferay.functional.validation.Composer.compose;
+import static com.liferay.functional.validation.Validation.just;
 import static com.liferay.functional.validation.Validator.predicate;
 
 /**
@@ -69,15 +71,12 @@ public class FieldProviderTest {
             predicate(
                 s -> s.length() > 10, s -> new Fail("must be longer than 10"));
 
-        Adaptor<Fail> adaptor = fieldProvider.getAdaptor(
-            (field, fail) ->
-                new FieldFail(field, Collections.singleton(fail)));
+        Adaptor<Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
 
         Validation<String, FieldFail> validation = adaptor.safeGet(
             "test", compose(mandatory(), safeCast(String.class), longerThan10));
 
-        Assert.assertEquals(
-            new Success<>("testValueLongerThan10"), validation);
+        Assert.assertEquals(just("testValueLongerThan10"), validation);
     }
 
     @Test
@@ -90,9 +89,7 @@ public class FieldProviderTest {
             predicate(
                 s -> s.length() > 10, s -> new Fail("must be longer than 10"));
 
-        Adaptor<Fail> adaptor = fieldProvider.getAdaptor(
-            (field, fail) ->
-                new FieldFail(field, Collections.singleton(fail)));
+        Adaptor<Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
 
         Validation<String, FieldFail> validation =
             adaptor.safeGet(
@@ -116,9 +113,7 @@ public class FieldProviderTest {
             predicate(
                 s -> s.length() > 10, s -> new Fail("must be longer than 10"));
 
-        Adaptor<Fail> adaptor = fieldProvider.getAdaptor(
-            (field, fail) ->
-                new FieldFail(field, Collections.singleton(fail)));
+        Adaptor<Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
 
         Validation<String, FieldFail> validation =
             adaptor.safeGet(
@@ -147,12 +142,10 @@ public class FieldProviderTest {
             predicate(
                 s -> s.length() > 10, s -> new Fail("must be longer than 10"));
 
-        Adaptor<Fail> adaptor = fieldProvider.getAdaptor(
-            (field, fail) ->
-                new FieldFail(field, Collections.singleton(fail)));
+        Adaptor<Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
 
         Assert.assertEquals(
-            new Success<>("testValueLongerThan10"),
+            just("testValueLongerThan10"),
             adaptor.getAdaptor("nested").flatMap(nestedAdaptor ->
                 nestedAdaptor.safeGet(
                     "test",
@@ -170,9 +163,7 @@ public class FieldProviderTest {
             predicate(
                 s -> s.length() > 10, s -> new Fail("must be longer than 10"));
 
-        Adaptor<Fail> adaptor = fieldProvider.getAdaptor(
-            (field, fail) ->
-                new FieldFail(field, Collections.singleton(fail)));
+        Adaptor<Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
 
         Validation<String, FieldFail> validation =
             adaptor.getAdaptor("nested").flatMap(nestedAdaptor ->
@@ -182,7 +173,7 @@ public class FieldProviderTest {
                         mandatory(), safeCast(String.class), longerThan10)));
 
         Assert.assertEquals(
-            new Validation.Failure<>(
+            new Failure<>(
                 new FieldFail("nested", "should not be empty")), validation);
     }
 
@@ -198,9 +189,7 @@ public class FieldProviderTest {
             predicate(
                 s -> s.length() > 10, s -> new Fail("must be longer than 10"));
 
-        Adaptor<Fail> adaptor = fieldProvider.getAdaptor(
-            (field, fail) ->
-                new FieldFail(field, Collections.singleton(fail)));
+        Adaptor<Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
 
         Validation<String, FieldFail> validation =
             adaptor.getAdaptor("nested").flatMap(nestedAdaptor ->
@@ -210,9 +199,41 @@ public class FieldProviderTest {
                         mandatory(), safeCast(String.class), longerThan10)));
 
         Assert.assertEquals(
-            new Validation.Failure<>(
+            new Failure<>(
                 new FieldFail(
                     "nested", "can't be casted to interface java.util.Map")),
+            validation);
+    }
+
+    @Test
+    public void testFailureFieldProviderWhenDeepNested() {
+        HashMap<String, Object> map = new HashMap<>();
+
+        map.put("nested", "wrong");
+
+        FieldProvider fieldProvider = new MapFieldProvider(map);
+
+        Validator<String, String, Fail> longerThan10 =
+            predicate(
+                s -> s.length() > 10, s -> new Fail("must be longer than 10"));
+
+        Adaptor<Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
+
+        Validation<Adaptor<Fail>, FieldFail> nested = focus(
+            adaptor, "nested", "nested");
+
+        Validation<String, FieldFail> validation =
+            nested.flatMap(nestedAdaptor ->
+                nestedAdaptor.safeGet(
+                    "test",
+                    compose(
+                        mandatory(), safeCast(String.class), longerThan10)));
+
+        Assert.assertEquals(
+            new Failure<String, FieldFail>(
+                new FieldFail("nested",
+                    new FieldFail(
+                    "nested", "can't be casted to interface java.util.Map"))),
             validation);
     }
 }

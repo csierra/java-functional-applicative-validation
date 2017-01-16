@@ -104,7 +104,7 @@ public interface FieldProvider {
             Adaptor<F> adaptor, String ... fields) {
 
             if (fields.length == 0) {
-                return new Validation.Success<>(adaptor);
+                return just(adaptor);
             }
 
             Validation<Adaptor<F>, FieldFail> current = adaptor.getAdaptor(
@@ -117,7 +117,8 @@ public interface FieldProvider {
             for (int i = 1; i < fields.length; i++) {
                 String field = fields[i];
 
-                current = current.flatMap(fp -> fp.getAdaptor(field));
+                current = current.flatMap(fp -> fp.getAdaptor(field)).
+                    mapFailures(f -> new FieldFail(field, f));
             }
 
             return current;
@@ -144,9 +145,8 @@ public interface FieldProvider {
                 return mandatory().
                     compose(safeFieldProvider()).
                     validate(get(fieldName)).
-                    mapFailures(
-                        f -> new FieldFail("nested", Collections.singleton(f))).
-                    map(fp -> fp.getAdaptor(map));
+                    map(fp -> fp.getAdaptor(map)).mapFailures(
+                    f -> new FieldFail(fieldName, f));
             }
         };
     }

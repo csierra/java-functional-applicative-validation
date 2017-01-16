@@ -27,20 +27,27 @@ import java.util.Set;
  * @author Carlos Sierra Andrés
  */
 public class FieldFail implements Monoid<FieldFail> {
-    final Map<String, Set<Fail>> _failures;
 
-    public FieldFail(Map<String, Set<Fail>> failures) {
-        _failures = failures;
-    }
+    final Map<String, Object> _failures;
 
-    public FieldFail(String field, Set<Fail> fails) {
+    public FieldFail(String field, Fail fail) {
         this();
 
-        _failures.put(field, fails);
+        _failures.put(field, fail);
     }
 
     public FieldFail() {
         _failures = new HashMap<>();
+    }
+
+    public FieldFail(String fieldName, FieldFail nested) {
+        this();
+
+        _failures.put(fieldName, nested);
+    }
+
+    private FieldFail(Map<String, Object> failures) {
+        _failures = failures;
     }
 
     @Override
@@ -60,7 +67,7 @@ public class FieldFail implements Monoid<FieldFail> {
     }
 
     public FieldFail(String field, String message) {
-        this(field, Collections.singleton(new Fail(message)));
+        this(field, new Fail(message));
     }
 
     @Override
@@ -80,6 +87,6 @@ public class FieldFail implements Monoid<FieldFail> {
     }
 
     public static FieldFail fromFail(String fieldName, Fail fail) {
-        return new FieldFail(fieldName, Collections.singleton(fail));
+        return new FieldFail(fieldName, fail);
     }
 }
