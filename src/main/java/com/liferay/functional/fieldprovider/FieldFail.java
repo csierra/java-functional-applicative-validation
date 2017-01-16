@@ -22,13 +22,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author Carlos Sierra Andrés
  */
 public class FieldFail implements Monoid<FieldFail> {
 
-    final Map<String, Object> _failures;
+    final Map<String, Monoid> _failures;
 
     public FieldFail(String field, Fail fail) {
         this();
@@ -46,7 +48,7 @@ public class FieldFail implements Monoid<FieldFail> {
         _failures.put(fieldName, nested);
     }
 
-    private FieldFail(Map<String, Object> failures) {
+    FieldFail(Map<String, Monoid> failures) {
         _failures = failures;
     }
 
@@ -72,11 +74,14 @@ public class FieldFail implements Monoid<FieldFail> {
 
     @Override
     public FieldFail mappend(Monoid<FieldFail> other) {
-        FieldFail fieldFail = new FieldFail(_failures);
+        Map<String, Monoid> collect = Stream.of(
+            ((FieldFail) other)._failures, _failures).
+            map(Map::entrySet).
+            flatMap(Collection::stream).collect(Collectors.toMap(
+            Map.Entry::getKey, Map.Entry::getValue, Monoid::mappend
+        ));
 
-        fieldFail._failures.putAll(((FieldFail) other)._failures);
-
-        return fieldFail;
+        return new FieldFail(collect);
     }
 
     @Override

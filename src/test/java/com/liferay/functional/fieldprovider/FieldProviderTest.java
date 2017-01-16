@@ -12,12 +12,16 @@
  * details.
  */
 
-package com.liferay.functional.validation;
+package com.liferay.functional.fieldprovider;
 
+import com.liferay.functional.Monoid;
 import com.liferay.functional.fieldprovider.FieldFail;
 import com.liferay.functional.fieldprovider.FieldProvider;
 import com.liferay.functional.fieldprovider.FieldProvider.Adaptor;
+import com.liferay.functional.validation.Fail;
+import com.liferay.functional.validation.Validation;
 import com.liferay.functional.validation.Validation.Failure;
+import com.liferay.functional.validation.Validator;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -29,6 +33,7 @@ import static com.liferay.functional.fieldprovider.FieldProvider.Adaptor.focus;
 import static com.liferay.functional.fieldprovider.FieldProvider.mandatory;
 import static com.liferay.functional.fieldprovider.FieldProvider.safeCast;
 import static com.liferay.functional.validation.Composer.compose;
+import static com.liferay.functional.validation.Validation.apply;
 import static com.liferay.functional.validation.Validation.just;
 import static com.liferay.functional.validation.Validator.predicate;
 
@@ -209,7 +214,7 @@ public class FieldProviderTest {
 
         HashMap<Object, Object> nestedMap2 = new HashMap<>();
 
-        nestedMap2.put("test", "pepe");
+        nestedMap2.put("test", "test");
 
         HashMap<Object, Object> nestedMap = new HashMap<>();
 
@@ -273,5 +278,53 @@ public class FieldProviderTest {
 
         Assert.assertEquals(just("stringlongerthan10"), validation);
     }
+
+    @Test
+    public void testFailureFieldProviderWhenProgressiveNesting() {
+        HashMap<String, Object> map = new HashMap<>();
+
+        HashMap<Object, Object> nestedMap2 = new HashMap<>();
+
+        nestedMap2.put("test", "test");
+
+        HashMap<Object, Object> nestedMap = new HashMap<>();
+
+        nestedMap.put("nested2", nestedMap2);
+
+        map.put("nested", nestedMap);
+
+        FieldProvider fieldProvider = new MapFieldProvider(map);
+
+        Validator<String, String, Fail> longerThan10 =
+            predicate(
+                s -> s.length() > 10, s -> new Fail("must be longer than 10"));
+
+        Adaptor<Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
+
+        Validation<Adaptor<Fail>, FieldFail> nested = focus(
+            adaptor, "nested");
+
+        Validation<Adaptor<Fail>, FieldFail> nested2 = focus(
+            adaptor, "nested", "nested2");
+
+        Validation<String, FieldFail> validation = Adaptor.safeGet(
+            nested, "test",
+            compose(mandatory(), safeCast(String.class), longerThan10));
+
+        Validation<String, FieldFail> validation2 = Adaptor.safeGet(
+            nested2, "test",
+            compose(mandatory(), safeCast(String.class), longerThan10));
+
+        Assert.assertEquals(
+            new Failure<String, FieldFail>(
+                new FieldFail("nested",
+                        new FieldFail(
+                            new HashMap<String, Monoid>(){{
+                            put("test", new Fail("should not be empty"));
+                            put("nested2", new FieldFail("test", "must be longer than 10"));
+                        }}))),
+            apply(String::concat, validation, validation2));
+    }
+
 
 }
