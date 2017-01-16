@@ -21,6 +21,8 @@ import com.liferay.functional.validation.Validation;
 import com.liferay.functional.validation.Validation.Failure;
 import com.liferay.functional.validation.Validator;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
 
@@ -117,8 +119,8 @@ public interface FieldProvider {
             for (int i = 1; i < fields.length; i++) {
                 String field = fields[i];
 
-                current = current.flatMap(fp -> fp.getAdaptor(field)).
-                    mapFailures(f -> new FieldFail(field, f));
+                current = current.flatMap(a -> a.getAdaptor(field));
+
             }
 
             return current;
@@ -128,6 +130,13 @@ public interface FieldProvider {
     default <F extends Monoid<F>> Adaptor<F> getAdaptor(
         Function2<String, F, FieldFail> map) {
 
+        return getAdaptor(map, Collections.emptyList());
+    }
+
+    default <F extends Monoid<F>> Adaptor<F> getAdaptor(
+        Function2<String, F, FieldFail> map,
+        Collection<String> stack) {
+
         return new Adaptor<F>() {
 
             @Override
@@ -135,20 +144,31 @@ public interface FieldProvider {
                 String fieldName, Validator<Optional<T>, R, F> validator) {
 
                 return validator.validate(get(fieldName)).mapFailures(
-                    map.curried().apply(fieldName));
+                    map.curried().apply(fieldName)).mapFailures(f -> {
+
+                    for (String s : stack) {
+                        f = new FieldFail(s, f);
+                    }
+
+                    return f;
+                });
             }
 
             @Override
             public Validation<Adaptor<F>, FieldFail> getAdaptor(
                 String fieldName) {
 
+                ArrayList<String> objects = new ArrayList<>(stack);
+
+                objects.add(0, fieldName);
+
                 return mandatory().
                     compose(safeFieldProvider()).
                     validate(get(fieldName)).
-                    map(fp -> fp.getAdaptor(map)).mapFailures(
+                    map(fp -> fp.getAdaptor(map, objects)).mapFailures(
                     f -> new FieldFail(fieldName, f));
             }
+
         };
     }
-
 }

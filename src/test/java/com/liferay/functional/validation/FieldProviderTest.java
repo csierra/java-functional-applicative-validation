@@ -18,11 +18,9 @@ import com.liferay.functional.fieldprovider.FieldFail;
 import com.liferay.functional.fieldprovider.FieldProvider;
 import com.liferay.functional.fieldprovider.FieldProvider.Adaptor;
 import com.liferay.functional.validation.Validation.Failure;
-import com.liferay.functional.validation.Validation.Success;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -209,7 +207,53 @@ public class FieldProviderTest {
     public void testFailureFieldProviderWhenDeepNested() {
         HashMap<String, Object> map = new HashMap<>();
 
-        map.put("nested", "wrong");
+        HashMap<Object, Object> nestedMap2 = new HashMap<>();
+
+        nestedMap2.put("test", "pepe");
+
+        HashMap<Object, Object> nestedMap = new HashMap<>();
+
+        nestedMap.put("nested2", nestedMap2);
+
+        map.put("nested", nestedMap);
+
+        FieldProvider fieldProvider = new MapFieldProvider(map);
+
+        Validator<String, String, Fail> longerThan10 =
+            predicate(
+                s -> s.length() > 10, s -> new Fail("must be longer than 10"));
+
+        Adaptor<Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
+
+        Validation<Adaptor<Fail>, FieldFail> nested2 = focus(
+            adaptor, "nested", "nested2");
+
+        Validation<String, FieldFail> validation =
+            Adaptor.safeGet(
+                nested2, "test",
+                compose(mandatory(), safeCast(String.class), longerThan10));
+
+        Assert.assertEquals(
+            new Failure<String, FieldFail>(
+                new FieldFail("nested",
+                    new FieldFail(
+                    "nested2", new FieldFail("test", "must be longer than 10")))),
+            validation);
+    }
+
+    @Test
+    public void testFieldProviderWhenDeepNested() {
+        HashMap<String, Object> map = new HashMap<>();
+
+        HashMap<Object, Object> nestedMap2 = new HashMap<>();
+
+        nestedMap2.put("test", "stringlongerthan10");
+
+        HashMap<Object, Object> nestedMap = new HashMap<>();
+
+        nestedMap.put("nested2", nestedMap2);
+
+        map.put("nested", nestedMap);
 
         FieldProvider fieldProvider = new MapFieldProvider(map);
 
@@ -220,20 +264,14 @@ public class FieldProviderTest {
         Adaptor<Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
 
         Validation<Adaptor<Fail>, FieldFail> nested = focus(
-            adaptor, "nested", "nested");
+            adaptor, "nested", "nested2");
 
         Validation<String, FieldFail> validation =
-            nested.flatMap(nestedAdaptor ->
-                nestedAdaptor.safeGet(
-                    "test",
-                    compose(
-                        mandatory(), safeCast(String.class), longerThan10)));
+            Adaptor.safeGet(
+                nested, "test",
+                compose(mandatory(), safeCast(String.class), longerThan10));
 
-        Assert.assertEquals(
-            new Failure<String, FieldFail>(
-                new FieldFail("nested",
-                    new FieldFail(
-                    "nested", "can't be casted to interface java.util.Map"))),
-            validation);
+        Assert.assertEquals(just("stringlongerthan10"), validation);
     }
+
 }
