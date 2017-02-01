@@ -249,7 +249,7 @@ public interface Validation<T, F extends Monoid<F>> {
 		return a.map(fun.curried()).apply(b);
 	}
 
-	public static <A, B, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function2<A, B, RESULT> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b) {
+	public static <A, B, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function2<A, B, Validation<RESULT, FAILURE>> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b) {
 		return a.map(fun.curried()).flatApply(b);
 	}
 
@@ -279,7 +279,7 @@ public interface Validation<T, F extends Monoid<F>> {
 		return a.map(fun.curried()).apply(b).apply(c);
 	}
 
-	public static <A, B, C, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function3<A, B, C, RESULT> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c) {
+	public static <A, B, C, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function3<A, B, C, Validation<RESULT, FAILURE>> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c) {
 		return a.map(fun.curried()).apply(b).flatApply(c);
 	}
 
@@ -309,7 +309,7 @@ public interface Validation<T, F extends Monoid<F>> {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d);
 	}
 
-	public static <A, B, C, D, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function4<A, B, C, D, RESULT> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d) {
+	public static <A, B, C, D, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function4<A, B, C, D, Validation<RESULT, FAILURE>> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d) {
 		return a.map(fun.curried()).apply(b).apply(c).flatApply(d);
 	}
 
@@ -339,7 +339,7 @@ public interface Validation<T, F extends Monoid<F>> {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e);
 	}
 
-	public static <A, B, C, D, E, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function5<A, B, C, D, E, RESULT> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e) {
+	public static <A, B, C, D, E, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function5<A, B, C, D, E, Validation<RESULT, FAILURE>> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e) {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).flatApply(e);
 	}
 
@@ -369,7 +369,7 @@ public interface Validation<T, F extends Monoid<F>> {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f);
 	}
 
-	public static <A, B, C, D, E, F, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function6<A, B, C, D, E, F, RESULT> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f) {
+	public static <A, B, C, D, E, F, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function6<A, B, C, D, E, F, Validation<RESULT, FAILURE>> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f) {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).flatApply(f);
 	}
 
@@ -399,7 +399,7 @@ public interface Validation<T, F extends Monoid<F>> {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g);
 	}
 
-	public static <A, B, C, D, E, F, G, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function7<A, B, C, D, E, F, G, RESULT> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g) {
+	public static <A, B, C, D, E, F, G, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function7<A, B, C, D, E, F, G, Validation<RESULT, FAILURE>> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g) {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).flatApply(g);
 	}
 
@@ -429,7 +429,7 @@ public interface Validation<T, F extends Monoid<F>> {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h);
 	}
 
-	public static <A, B, C, D, E, F, G, H, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function8<A, B, C, D, E, F, G, H, RESULT> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h) {
+	public static <A, B, C, D, E, F, G, H, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function8<A, B, C, D, E, F, G, H, Validation<RESULT, FAILURE>> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h) {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).flatApply(h);
 	}
 
@@ -459,7 +459,7 @@ public interface Validation<T, F extends Monoid<F>> {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i);
 	}
 
-	public static <A, B, C, D, E, F, G, H, I, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function9<A, B, C, D, E, F, G, H, I, RESULT> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i) {
+	public static <A, B, C, D, E, F, G, H, I, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function9<A, B, C, D, E, F, G, H, I, Validation<RESULT, FAILURE>> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i) {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).flatApply(i);
 	}
 
@@ -489,7 +489,7 @@ public interface Validation<T, F extends Monoid<F>> {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j);
 	}
 
-	public static <A, B, C, D, E, F, G, H, I, J, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function10<A, B, C, D, E, F, G, H, I, J, RESULT> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j) {
+	public static <A, B, C, D, E, F, G, H, I, J, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function10<A, B, C, D, E, F, G, H, I, J, Validation<RESULT, FAILURE>> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j) {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).flatApply(j);
 	}
 
@@ -519,7 +519,7 @@ public interface Validation<T, F extends Monoid<F>> {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k);
 	}
 
-	public static <A, B, C, D, E, F, G, H, I, J, K, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function11<A, B, C, D, E, F, G, H, I, J, K, RESULT> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k) {
+	public static <A, B, C, D, E, F, G, H, I, J, K, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function11<A, B, C, D, E, F, G, H, I, J, K, Validation<RESULT, FAILURE>> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k) {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).flatApply(k);
 	}
 
@@ -549,7 +549,7 @@ public interface Validation<T, F extends Monoid<F>> {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l);
 	}
 
-	public static <A, B, C, D, E, F, G, H, I, J, K, L, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function12<A, B, C, D, E, F, G, H, I, J, K, L, RESULT> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k, Validation<L, FAILURE> l) {
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function12<A, B, C, D, E, F, G, H, I, J, K, L, Validation<RESULT, FAILURE>> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k, Validation<L, FAILURE> l) {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).flatApply(l);
 	}
 
@@ -579,7 +579,7 @@ public interface Validation<T, F extends Monoid<F>> {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m);
 	}
 
-	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function13<A, B, C, D, E, F, G, H, I, J, K, L, M, RESULT> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k, Validation<L, FAILURE> l, Validation<M, FAILURE> m) {
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function13<A, B, C, D, E, F, G, H, I, J, K, L, M, Validation<RESULT, FAILURE>> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k, Validation<L, FAILURE> l, Validation<M, FAILURE> m) {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).flatApply(m);
 	}
 
@@ -609,7 +609,7 @@ public interface Validation<T, F extends Monoid<F>> {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n);
 	}
 
-	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function14<A, B, C, D, E, F, G, H, I, J, K, L, M, N, RESULT> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k, Validation<L, FAILURE> l, Validation<M, FAILURE> m, Validation<N, FAILURE> n) {
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function14<A, B, C, D, E, F, G, H, I, J, K, L, M, N, Validation<RESULT, FAILURE>> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k, Validation<L, FAILURE> l, Validation<M, FAILURE> m, Validation<N, FAILURE> n) {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).flatApply(n);
 	}
 
@@ -639,7 +639,7 @@ public interface Validation<T, F extends Monoid<F>> {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o);
 	}
 
-	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function15<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, RESULT> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k, Validation<L, FAILURE> l, Validation<M, FAILURE> m, Validation<N, FAILURE> n, Validation<O, FAILURE> o) {
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function15<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, Validation<RESULT, FAILURE>> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k, Validation<L, FAILURE> l, Validation<M, FAILURE> m, Validation<N, FAILURE> n, Validation<O, FAILURE> o) {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).flatApply(o);
 	}
 
@@ -669,7 +669,7 @@ public interface Validation<T, F extends Monoid<F>> {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p);
 	}
 
-	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function16<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, RESULT> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k, Validation<L, FAILURE> l, Validation<M, FAILURE> m, Validation<N, FAILURE> n, Validation<O, FAILURE> o, Validation<P, FAILURE> p) {
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function16<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Validation<RESULT, FAILURE>> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k, Validation<L, FAILURE> l, Validation<M, FAILURE> m, Validation<N, FAILURE> n, Validation<O, FAILURE> o, Validation<P, FAILURE> p) {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).flatApply(p);
 	}
 
@@ -699,7 +699,7 @@ public interface Validation<T, F extends Monoid<F>> {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q);
 	}
 
-	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function17<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, RESULT> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k, Validation<L, FAILURE> l, Validation<M, FAILURE> m, Validation<N, FAILURE> n, Validation<O, FAILURE> o, Validation<P, FAILURE> p, Validation<Q, FAILURE> q) {
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function17<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, Validation<RESULT, FAILURE>> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k, Validation<L, FAILURE> l, Validation<M, FAILURE> m, Validation<N, FAILURE> n, Validation<O, FAILURE> o, Validation<P, FAILURE> p, Validation<Q, FAILURE> q) {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).flatApply(q);
 	}
 
@@ -729,7 +729,7 @@ public interface Validation<T, F extends Monoid<F>> {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r);
 	}
 
-	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function18<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, RESULT> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k, Validation<L, FAILURE> l, Validation<M, FAILURE> m, Validation<N, FAILURE> n, Validation<O, FAILURE> o, Validation<P, FAILURE> p, Validation<Q, FAILURE> q, Validation<R, FAILURE> r) {
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function18<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, Validation<RESULT, FAILURE>> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k, Validation<L, FAILURE> l, Validation<M, FAILURE> m, Validation<N, FAILURE> n, Validation<O, FAILURE> o, Validation<P, FAILURE> p, Validation<Q, FAILURE> q, Validation<R, FAILURE> r) {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).flatApply(r);
 	}
 
@@ -759,7 +759,7 @@ public interface Validation<T, F extends Monoid<F>> {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s);
 	}
 
-	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function19<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, RESULT> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k, Validation<L, FAILURE> l, Validation<M, FAILURE> m, Validation<N, FAILURE> n, Validation<O, FAILURE> o, Validation<P, FAILURE> p, Validation<Q, FAILURE> q, Validation<R, FAILURE> r, Validation<S, FAILURE> s) {
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function19<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, Validation<RESULT, FAILURE>> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k, Validation<L, FAILURE> l, Validation<M, FAILURE> m, Validation<N, FAILURE> n, Validation<O, FAILURE> o, Validation<P, FAILURE> p, Validation<Q, FAILURE> q, Validation<R, FAILURE> r, Validation<S, FAILURE> s) {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).flatApply(s);
 	}
 
@@ -789,7 +789,7 @@ public interface Validation<T, F extends Monoid<F>> {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s).apply(t);
 	}
 
-	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function20<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, RESULT> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k, Validation<L, FAILURE> l, Validation<M, FAILURE> m, Validation<N, FAILURE> n, Validation<O, FAILURE> o, Validation<P, FAILURE> p, Validation<Q, FAILURE> q, Validation<R, FAILURE> r, Validation<S, FAILURE> s, Validation<T, FAILURE> t) {
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function20<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, Validation<RESULT, FAILURE>> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k, Validation<L, FAILURE> l, Validation<M, FAILURE> m, Validation<N, FAILURE> n, Validation<O, FAILURE> o, Validation<P, FAILURE> p, Validation<Q, FAILURE> q, Validation<R, FAILURE> r, Validation<S, FAILURE> s, Validation<T, FAILURE> t) {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s).flatApply(t);
 	}
 
@@ -819,7 +819,7 @@ public interface Validation<T, F extends Monoid<F>> {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s).apply(t).apply(u);
 	}
 
-	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function21<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, RESULT> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k, Validation<L, FAILURE> l, Validation<M, FAILURE> m, Validation<N, FAILURE> n, Validation<O, FAILURE> o, Validation<P, FAILURE> p, Validation<Q, FAILURE> q, Validation<R, FAILURE> r, Validation<S, FAILURE> s, Validation<T, FAILURE> t, Validation<U, FAILURE> u) {
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function21<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, Validation<RESULT, FAILURE>> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k, Validation<L, FAILURE> l, Validation<M, FAILURE> m, Validation<N, FAILURE> n, Validation<O, FAILURE> o, Validation<P, FAILURE> p, Validation<Q, FAILURE> q, Validation<R, FAILURE> r, Validation<S, FAILURE> s, Validation<T, FAILURE> t, Validation<U, FAILURE> u) {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s).apply(t).flatApply(u);
 	}
 
@@ -849,7 +849,7 @@ public interface Validation<T, F extends Monoid<F>> {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s).apply(t).apply(u).apply(v);
 	}
 
-	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function22<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, RESULT> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k, Validation<L, FAILURE> l, Validation<M, FAILURE> m, Validation<N, FAILURE> n, Validation<O, FAILURE> o, Validation<P, FAILURE> p, Validation<Q, FAILURE> q, Validation<R, FAILURE> r, Validation<S, FAILURE> s, Validation<T, FAILURE> t, Validation<U, FAILURE> u, Validation<V, FAILURE> v) {
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function22<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, Validation<RESULT, FAILURE>> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k, Validation<L, FAILURE> l, Validation<M, FAILURE> m, Validation<N, FAILURE> n, Validation<O, FAILURE> o, Validation<P, FAILURE> p, Validation<Q, FAILURE> q, Validation<R, FAILURE> r, Validation<S, FAILURE> s, Validation<T, FAILURE> t, Validation<U, FAILURE> u, Validation<V, FAILURE> v) {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s).apply(t).apply(u).flatApply(v);
 	}
 
@@ -879,7 +879,7 @@ public interface Validation<T, F extends Monoid<F>> {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s).apply(t).apply(u).apply(v).apply(w);
 	}
 
-	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function23<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, RESULT> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k, Validation<L, FAILURE> l, Validation<M, FAILURE> m, Validation<N, FAILURE> n, Validation<O, FAILURE> o, Validation<P, FAILURE> p, Validation<Q, FAILURE> q, Validation<R, FAILURE> r, Validation<S, FAILURE> s, Validation<T, FAILURE> t, Validation<U, FAILURE> u, Validation<V, FAILURE> v, Validation<W, FAILURE> w) {
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function23<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, Validation<RESULT, FAILURE>> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k, Validation<L, FAILURE> l, Validation<M, FAILURE> m, Validation<N, FAILURE> n, Validation<O, FAILURE> o, Validation<P, FAILURE> p, Validation<Q, FAILURE> q, Validation<R, FAILURE> r, Validation<S, FAILURE> s, Validation<T, FAILURE> t, Validation<U, FAILURE> u, Validation<V, FAILURE> v, Validation<W, FAILURE> w) {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s).apply(t).apply(u).apply(v).flatApply(w);
 	}
 
@@ -909,7 +909,7 @@ public interface Validation<T, F extends Monoid<F>> {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s).apply(t).apply(u).apply(v).apply(w).apply(x);
 	}
 
-	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function24<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, RESULT> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k, Validation<L, FAILURE> l, Validation<M, FAILURE> m, Validation<N, FAILURE> n, Validation<O, FAILURE> o, Validation<P, FAILURE> p, Validation<Q, FAILURE> q, Validation<R, FAILURE> r, Validation<S, FAILURE> s, Validation<T, FAILURE> t, Validation<U, FAILURE> u, Validation<V, FAILURE> v, Validation<W, FAILURE> w, Validation<X, FAILURE> x) {
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function24<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Validation<RESULT, FAILURE>> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k, Validation<L, FAILURE> l, Validation<M, FAILURE> m, Validation<N, FAILURE> n, Validation<O, FAILURE> o, Validation<P, FAILURE> p, Validation<Q, FAILURE> q, Validation<R, FAILURE> r, Validation<S, FAILURE> s, Validation<T, FAILURE> t, Validation<U, FAILURE> u, Validation<V, FAILURE> v, Validation<W, FAILURE> w, Validation<X, FAILURE> x) {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s).apply(t).apply(u).apply(v).apply(w).flatApply(x);
 	}
 
@@ -939,7 +939,7 @@ public interface Validation<T, F extends Monoid<F>> {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s).apply(t).apply(u).apply(v).apply(w).apply(x).apply(y);
 	}
 
-	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function25<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, RESULT> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k, Validation<L, FAILURE> l, Validation<M, FAILURE> m, Validation<N, FAILURE> n, Validation<O, FAILURE> o, Validation<P, FAILURE> p, Validation<Q, FAILURE> q, Validation<R, FAILURE> r, Validation<S, FAILURE> s, Validation<T, FAILURE> t, Validation<U, FAILURE> u, Validation<V, FAILURE> v, Validation<W, FAILURE> w, Validation<X, FAILURE> x, Validation<Y, FAILURE> y) {
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function25<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Validation<RESULT, FAILURE>> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k, Validation<L, FAILURE> l, Validation<M, FAILURE> m, Validation<N, FAILURE> n, Validation<O, FAILURE> o, Validation<P, FAILURE> p, Validation<Q, FAILURE> q, Validation<R, FAILURE> r, Validation<S, FAILURE> s, Validation<T, FAILURE> t, Validation<U, FAILURE> u, Validation<V, FAILURE> v, Validation<W, FAILURE> w, Validation<X, FAILURE> x, Validation<Y, FAILURE> y) {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s).apply(t).apply(u).apply(v).apply(w).apply(x).flatApply(y);
 	}
 
@@ -969,7 +969,7 @@ public interface Validation<T, F extends Monoid<F>> {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s).apply(t).apply(u).apply(v).apply(w).apply(x).apply(y).apply(z);
 	}
 
-	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function26<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, RESULT> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k, Validation<L, FAILURE> l, Validation<M, FAILURE> m, Validation<N, FAILURE> n, Validation<O, FAILURE> o, Validation<P, FAILURE> p, Validation<Q, FAILURE> q, Validation<R, FAILURE> r, Validation<S, FAILURE> s, Validation<T, FAILURE> t, Validation<U, FAILURE> u, Validation<V, FAILURE> v, Validation<W, FAILURE> w, Validation<X, FAILURE> x, Validation<Y, FAILURE> y, Validation<Z, FAILURE> z) {
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> flatApply(Function26<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, Validation<RESULT, FAILURE>> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b, Validation<C, FAILURE> c, Validation<D, FAILURE> d, Validation<E, FAILURE> e, Validation<F, FAILURE> f, Validation<G, FAILURE> g, Validation<H, FAILURE> h, Validation<I, FAILURE> i, Validation<J, FAILURE> j, Validation<K, FAILURE> k, Validation<L, FAILURE> l, Validation<M, FAILURE> m, Validation<N, FAILURE> n, Validation<O, FAILURE> o, Validation<P, FAILURE> p, Validation<Q, FAILURE> q, Validation<R, FAILURE> r, Validation<S, FAILURE> s, Validation<T, FAILURE> t, Validation<U, FAILURE> u, Validation<V, FAILURE> v, Validation<W, FAILURE> w, Validation<X, FAILURE> x, Validation<Y, FAILURE> y, Validation<Z, FAILURE> z) {
 		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s).apply(t).apply(u).apply(v).apply(w).apply(x).apply(y).flatApply(z);
 	}
 
