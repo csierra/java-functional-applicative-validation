@@ -94,11 +94,135 @@ Validation<Integer, Fail> success;
 Validation<Integer, Fail> plusOne = success.map(i -> i + 1);
 ```
 
+It is possible to adapt an existing validator to work on a different model. Let's take our `between` and `notBlank` validators as example. If we want to use those validators to work on an existing model we can use `adapt`:
+
+```
+class User {
+    String name;
+	Integer age;
+
+	public User(Integer age, String name) {
+		this.age = age;
+		this.name = name;
+	}
+	
+    public Integer getAge() {
+		return age;
+	}
+
+	public String getName() {
+		return name;
+	}
+}
+
+Validator<User, Integer, FieldFail> safeUserAge = between(8, 99).adapt(User::getAge, f -> new FieldFail("age", f));
+
+Validator<User, String, FieldFail> safeUserName = notBlank.adapt(User::getName, f -> new FieldFail("name", f));
+
+so now we have two validators that operate on User. We can further adapt those so they return `User` instead of their respective types using `partials`. We can also use `FieldFail.fromFail` to save some characters:
+
+```
+Validator<User, User, FieldFail> userValidator = Validator.partials(
+    between(8, 99).adapt(User::getAge, fromFail("age")),
+	notBlank.adapt(User::getName, fromFail("name"))
+)
+```
+
+and now we can validate the user and collect either the result or the set of failures. 
+
+```
+Validation<User, FieldFail> validation = userValidator.validate(user);
+```
+
+If we don't have a user instance we can use the _Applicative Functor_ nature of `Validation` to create the user only when the fields pass validation.
+
+```
+Validation<User, Fail> validation = Validation.apply(
+	User::new, 
+	between(8, 99).validate(10),
+	notBlank.validate("aName"));
+);
+
+### Field Providers 
+
+Since it is a very common situation to get input data from `Map<String, String>` or `Map<String, Object>` like structures the library supports the concept of `FieldProvider`. This interface provides methods to work with validators more conveniently:
+
+```
+StringProvider sp;
+
+Adaptor<Fail> adaptor = sp.getAdaptor(FieldFail::new); //Adapt the errors to contain field info
+
+Validation<String, FieldFail> safeName = Adaptor.safeGet(
+    adaptor, "name", 
+	compose(required(), notBlank));
+	
+Validation<Integer, FieldFail> age = Adaptor.safeGet(
+	adaptor, "age", 
+	compose(required(), isANumber(), between(8, 99)));
+
+```
+
+`FieldProvider` and `Adaptor` provide a way to traverse nested structures using `Adaptor.getAdaptor(String fieldName)`. You can also use `Adaptor.focus(String ... fields)` to point to a nested structure. In case of invalid structure the error will be returned in the `Validation` type. 
 
 
+### Forcing validation in business logic
 
+One use case for the validation library would be to force the validation of the parameters of a function invocation. We can force this by using specific types for the parameters. This types can have `package private` constructor visibility and may only be accessed by a `public static` function that returns a `Validation<Type>`. By using this idiom we can decouple the business logic from the validation logic and still be sure that the invocation of the function is going to be safe (unless mischevious uses of reflection and such):
 
+```
 
+public class Service {
+
+	public Result doSomething(Name name, Age age) {}
+	
+	static class Name {
+		String _name;
+		
+		Name(String name) {
+			_name = name;
+		}
+	}
+	
+	static class Age {
+		int _age;
+		
+		Age(int age) {
+			_age = age;
+		}
+	}
+	
+	public static Validation<Name, FieldFail> name(String name) {
+		//apply all validations here
+		return notBlank.
+			validate(name).
+			mapFailures(FieldFail.fromFail("name")).
+			map(Name::new);
+	}
+	
+	public static Validation<Age, FieldFail> name(int age) {
+		//apply all validations here
+		return between(0, 99).
+			validate(age).
+			mapFailures(FieldFail.fromFail("age")).
+			map(Age::new);
+	}
+	
+}
+
+```
+
+then we can invoke our service using: 
+
+```
+
+Service service = new Service();
+
+Validation<Result, FieldFail> result = Validation.apply(
+	service::doSomething, Service.name("carlos"), Service.age(38));
+
+```
+
+if we have unit tests in the package we can test the logic bypassing the validation step. 
 
 
 
