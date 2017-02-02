@@ -14,18 +14,22 @@
 
 package com.liferay.functional.fieldprovider;
 
+
 import com.liferay.functional.Monoid;
 import com.liferay.functional.validation.Validator;
 
 import java.util.Optional;
-import java.util.function.BiFunction;
 
 /**
  * @author Carlos Sierra Andrés
  */
-public interface StringProvider  {
+public interface StringProvider extends FieldProvider {
 
-//    @SuppressWarnings("unchecked")
+    @Override
+    @SuppressWarnings("unchecked")
+    Optional<String> get(String name);
+
+    //    @SuppressWarnings("unchecked")
 //    @Override
 //    Optional<String> get(String name);
 //
