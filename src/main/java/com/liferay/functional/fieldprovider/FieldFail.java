@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -91,7 +92,7 @@ public class FieldFail implements Monoid<FieldFail> {
             '}';
     }
 
-    public static FieldFail fromFail(String fieldName, Fail fail) {
-        return new FieldFail(fieldName, fail);
+    public static Function<Fail, FieldFail> fromFail(String fieldName) {
+        return (Fail fail) -> new FieldFail(fieldName, fail);
     }
 }
