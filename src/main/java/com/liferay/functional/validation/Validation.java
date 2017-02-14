@@ -245,6 +245,10 @@ public interface Validation<T, F extends Monoid<F>> {
 		return new Success<>(t);
 	}
 
+	static <T> Validation<T, Fail> fail(String message) {
+		return new Validation.Failure(new Fail(message));
+	}
+
 	public static <A, B, RESULT, FAILURE extends Monoid<FAILURE>> Validation<RESULT, FAILURE> apply(Function2<A, B, RESULT> fun, Validation<A, FAILURE> a, Validation<B, FAILURE> b) {
 		return a.map(fun.curried()).apply(b);
 	}
