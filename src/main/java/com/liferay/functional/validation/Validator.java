@@ -127,7 +127,7 @@ public interface Validator<T, R, F extends Monoid<F>>
 			errors);
 	}
 
-	static <T, F extends Monoid<F>> Validator<T, T, F> predicate(
+	static <T, F extends Monoid<F>> Validator<T, T, F> verify(
 		Predicate<T> predicate, Function<T, F> error) {
 
 		return input -> {
@@ -140,19 +140,25 @@ public interface Validator<T, R, F extends Monoid<F>>
 		};
 	}
 
+	static <T> Validator<T, T, Fail> verify(
+		Predicate<T> predicate, String errorMessage) {
+
+		return verify(predicate, t -> new Fail(errorMessage));
+	}
+
 //	static Validator<String, String, FAILURE> hasLength(int length) {
-//		return predicate(
+//		return verify(
 //			input -> input.length() == length,
 //			input -> input + " must have " + length + " letters");
 //	}
 //
 //	static Validator<String, String, FAILURE> longerThan(int length) {
-//		return predicate(
+//		return verify(
 //			input -> input.length() > length,
 //			input -> input + " must have " + length + " letters");
 //	}
 //
-//	Validator<String, String, FAILURE> isANumber = predicate(
+//	Validator<String, String, FAILURE> isANumber = verify(
 //		input -> {
 //			try {
 //				Integer.parseInt(input);
@@ -165,28 +171,28 @@ public interface Validator<T, R, F extends Monoid<F>>
 //		}, input -> input + " is not a number");
 //
 //	static Validator<Integer, Integer, FAILURE> greaterThan(int min) {
-//		return predicate(
+//		return verify(
 //			input -> input > min,
 //			input -> input + " must be greater than" + min
 //		);
 //	}
 //
 //	static Validator<Integer, Integer, FAILURE> lowerThan(int max) {
-//		return predicate(
+//		return verify(
 //			input -> input < max,
 //			input -> input + " should be lower than " + max
 //		);
 //	}
 //
 //	static Validator<String, String, FAILURE> startsWith(String prefix) {
-//		return predicate(
+//		return verify(
 //			input -> input.startsWith(prefix),
 //			input -> input + " should start with " + prefix
 //		);
 //	}
 //
 //	static Validator<String, String, FAILURE> endsWith(String suffix) {
-//		return predicate(
+//		return verify(
 //			input -> input.endsWith(suffix),
 //			input -> input + " should start with " + suffix
 //		);

@@ -15,8 +15,6 @@
 package com.liferay.functional.fieldprovider;
 
 import com.liferay.functional.Monoid;
-import com.liferay.functional.fieldprovider.FieldFail;
-import com.liferay.functional.fieldprovider.FieldProvider;
 import com.liferay.functional.fieldprovider.FieldProvider.Adaptor;
 import com.liferay.functional.validation.Fail;
 import com.liferay.functional.validation.Validation;
@@ -35,7 +33,7 @@ import static com.liferay.functional.fieldprovider.FieldProvider.safeCast;
 import static com.liferay.functional.validation.Composer.compose;
 import static com.liferay.functional.validation.Validation.apply;
 import static com.liferay.functional.validation.Validation.just;
-import static com.liferay.functional.validation.Validator.predicate;
+import static com.liferay.functional.validation.Validator.verify;
 
 /**
  * @author Carlos Sierra Andrés
@@ -71,8 +69,7 @@ public class FieldProviderTest {
         MapFieldProvider fieldProvider = new MapFieldProvider(map);
 
         Validator<String, String, Fail> longerThan10 =
-            predicate(
-                s -> s.length() > 10, s -> new Fail("must be longer than 10"));
+            verify(s -> s.length() > 10, "must be longer than 10");
 
         Adaptor<Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
 
@@ -89,8 +86,7 @@ public class FieldProviderTest {
         MapFieldProvider fieldProvider = new MapFieldProvider(map);
 
         Validator<String, String, Fail> longerThan10 =
-            predicate(
-                s -> s.length() > 10, s -> new Fail("must be longer than 10"));
+            verify(s -> s.length() > 10, "must be longer than 10");
 
         Adaptor<Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
 
@@ -113,8 +109,7 @@ public class FieldProviderTest {
         MapFieldProvider fieldProvider = new MapFieldProvider(map);
 
         Validator<String, String, Fail> longerThan10 =
-            predicate(
-                s -> s.length() > 10, s -> new Fail("must be longer than 10"));
+            verify(s -> s.length() > 10, "must be longer than 10");
 
         Adaptor<Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
 
@@ -142,8 +137,7 @@ public class FieldProviderTest {
         FieldProvider fieldProvider = new MapFieldProvider(map);
 
         Validator<String, String, Fail> longerThan10 =
-            predicate(
-                s -> s.length() > 10, s -> new Fail("must be longer than 10"));
+            verify(s -> s.length() > 10, "must be longer than 10");
 
         Adaptor<Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
 
@@ -163,8 +157,7 @@ public class FieldProviderTest {
         FieldProvider fieldProvider = new MapFieldProvider(map);
 
         Validator<String, String, Fail> longerThan10 =
-            predicate(
-                s -> s.length() > 10, s -> new Fail("must be longer than 10"));
+            verify(s -> s.length() > 10, "must be longer than 10");
 
         Adaptor<Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
 
@@ -189,8 +182,7 @@ public class FieldProviderTest {
         FieldProvider fieldProvider = new MapFieldProvider(map);
 
         Validator<String, String, Fail> longerThan10 =
-            predicate(
-                s -> s.length() > 10, s -> new Fail("must be longer than 10"));
+            verify(s -> s.length() > 10, "must be longer than 10");
 
         Adaptor<Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
 
@@ -225,8 +217,7 @@ public class FieldProviderTest {
         FieldProvider fieldProvider = new MapFieldProvider(map);
 
         Validator<String, String, Fail> longerThan10 =
-            predicate(
-                s -> s.length() > 10, s -> new Fail("must be longer than 10"));
+            verify(s -> s.length() > 10, "must be longer than 10");
 
         Adaptor<Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
 
@@ -263,8 +254,7 @@ public class FieldProviderTest {
         FieldProvider fieldProvider = new MapFieldProvider(map);
 
         Validator<String, String, Fail> longerThan10 =
-            predicate(
-                s -> s.length() > 10, s -> new Fail("must be longer than 10"));
+            verify(s -> s.length() > 10, "must be longer than 10");
 
         Adaptor<Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
 
@@ -296,8 +286,7 @@ public class FieldProviderTest {
         FieldProvider fieldProvider = new MapFieldProvider(map);
 
         Validator<String, String, Fail> longerThan10 =
-            predicate(
-                s -> s.length() > 10, s -> new Fail("must be longer than 10"));
+            verify(s -> s.length() > 10, "must be longer than 10");
 
         Adaptor<Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
 

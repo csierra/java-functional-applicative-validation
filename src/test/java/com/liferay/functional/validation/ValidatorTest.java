@@ -21,7 +21,7 @@ import org.junit.Test;
 import java.util.function.Function;
 
 import static com.liferay.functional.validation.Validator.partials;
-import static com.liferay.functional.validation.Validator.predicate;
+import static com.liferay.functional.validation.Validator.verify;
 import static com.liferay.functional.validation.ValidatorTest.Data.adapt;
 import static org.junit.Assert.assertEquals;
 
@@ -32,9 +32,9 @@ public class ValidatorTest {
 
     @Test
     public void testValidate() {
-        Validator<String, String, Fail> stringValidator = predicate(
+        Validator<String, String, Fail> stringValidator = verify(
             (String s) -> s.length() > 5,
-            s -> new Fail("length should be longer than 5"));
+            "length should be longer than 5");
 
         assertEquals(
             new Failure<>(new Fail("length should be longer than 5")),
@@ -52,9 +52,9 @@ public class ValidatorTest {
             new Success<>(11),
             stringValidator.validate("hello world").map(String::length));
 
-        Validator<Integer, Integer, Fail> intValidator = predicate(
+        Validator<Integer, Integer, Fail> intValidator = verify(
             (Integer i) -> i > 5,
-            i -> new Fail("number should be greater than 5"));
+            "number should be greater than 5");
 
         assertEquals(
             new Success<>(11),
@@ -64,11 +64,11 @@ public class ValidatorTest {
 
     @Test
     public void testAdaptAndPartial() {
-        Validator<String, String, Fail> notBlankValidator = predicate(
-            (String s) -> !s.isEmpty(), s -> new Fail("should not be empty"));
+        Validator<String, String, Fail> notBlankValidator = verify(
+            (String s) -> !s.isEmpty(), "should not be empty");
 
-        Validator<Integer, Integer, Fail> positiveValidator = predicate(
-            (Integer i) -> i > 0, i -> new Fail("should be positive"));
+        Validator<Integer, Integer, Fail> positiveValidator = verify(
+            (Integer i) -> i > 0, "should be positive");
 
         Validator<Data, Data, Fail> dataValidator =
             partials(
