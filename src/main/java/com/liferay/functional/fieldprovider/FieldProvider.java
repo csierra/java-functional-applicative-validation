@@ -80,6 +80,9 @@ public interface FieldProvider {
     }
 
     interface Adaptor<F extends Monoid<F>> {
+        <T, R> Validator<FieldProvider, R, FieldFail> adapt(
+            String fieldName, Validator<Optional<T>, R, F> validator);
+
         <T, R> Validation<R, FieldFail> safeGet(
             String fieldName, Validator<Optional<T>, R, F> validator);
 
@@ -138,6 +141,13 @@ public interface FieldProvider {
         Collection<String> stack) {
 
         return new Adaptor<F>() {
+
+            @Override
+            public <T, R> Validator<FieldProvider, R, FieldFail> adapt(
+                String fieldName, Validator<Optional<T>, R, F> validator) {
+
+                return validator.adapt((FieldProvider fp) -> (Optional<T>) fp.get(fieldName), map.curried().apply(fieldName));
+            }
 
             @Override
             public <T, R> Validation<R, FieldFail> safeGet(
