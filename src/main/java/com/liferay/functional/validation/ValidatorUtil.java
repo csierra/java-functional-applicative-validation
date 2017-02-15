@@ -16,6 +16,7 @@ package com.liferay.functional.validation;
 
 import java.util.Optional;
 
+import static com.liferay.functional.fieldprovider.FieldProvider.safeCast;
 import static com.liferay.functional.validation.Validation.just;
 import static com.liferay.functional.validation.Validator.verify;
 
@@ -23,6 +24,12 @@ import static com.liferay.functional.validation.Validator.verify;
  * @author Alejandro Hernández
  */
 public class ValidatorUtil {
+	public static final Validator<Object, Integer, Fail> IS_NUMBER =
+		safeCast(Integer.class, "must be a number");
+
+	public static final Validator<Object, String, Fail> IS_STRING =
+		safeCast(String.class, "must be a string");
+
 	public static final Validator<String, String, Fail> NOT_EMPTY =
 		verify(s -> s.length() > 0, "must not be empty");
 

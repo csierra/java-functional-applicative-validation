@@ -50,6 +50,17 @@ public interface FieldProvider {
         };
     }
 
+    static <T> SafeCast<T, Fail> safeCast(Class<T> clazz, String errorMessage) {
+        return input -> {
+            try {
+                return new Validation.Success<>(clazz.cast(input));
+            }
+            catch (ClassCastException cce) {
+                return new Failure<>(new Fail(errorMessage));
+            }
+        };
+    }
+
     public static <T> Validator<Optional<T>, Optional<T>, Fail> optional() {
         return Validation::just;
     }
