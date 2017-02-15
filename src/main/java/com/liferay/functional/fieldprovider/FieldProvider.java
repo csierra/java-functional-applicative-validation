@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static com.liferay.functional.validation.Validation.just;
+import static com.liferay.functional.validation.ValidatorUtil.MANDATORY;
 
 /**
  * @author Carlos Sierra Andrés
@@ -45,17 +46,6 @@ public interface FieldProvider {
             catch (ClassCastException cce) {
                 return new Failure<>(
                     new Fail("can't be casted to " + clazz));
-            }
-        };
-    }
-
-    public static <T> Validator<Optional<T>, T, Fail> mandatory() {
-        return input -> {
-            if (input.isPresent()) {
-                return just(input.get());
-            }
-            else {
-                return new Failure<>(new Fail("should not be empty"));
             }
         };
     }
@@ -172,7 +162,7 @@ public interface FieldProvider {
 
                 objects.add(0, fieldName);
 
-                return mandatory().
+                return MANDATORY().
                     compose(safeFieldProvider()).
                     validate(get(fieldName)).
                     map(fp -> fp.getAdaptor(map, objects)).mapFailures(
