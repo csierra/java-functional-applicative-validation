@@ -118,6 +118,7 @@ class User {
 Validator<User, Integer, FieldFail> safeUserAge = between(8, 99).adapt(User::getAge, f -> new FieldFail("age", f));
 
 Validator<User, String, FieldFail> safeUserName = notBlank.adapt(User::getName, f -> new FieldFail("name", f));
+```
 
 so now we have two validators that operate on User. We can further adapt those so they return `User` instead of their respective types using `partials`. We can also use `FieldFail.fromFail` to save some characters:
 
@@ -142,6 +143,7 @@ Validation<User, Fail> validation = Validation.apply(
 	between(8, 99).validate(10),
 	notBlank.validate("aName"));
 );
+```
 
 ### Field Providers 
 
@@ -199,7 +201,7 @@ public class Service {
 			map(Name::new);
 	}
 	
-	public static Validation<Age, FieldFail> name(int age) {
+	public static Validation<Age, FieldFail> age(int age) {
 		//apply all validations here
 		return between(0, 99).
 			validate(age).
@@ -223,13 +225,3 @@ Validation<Result, FieldFail> result = Validation.apply(
 ```
 
 if we have unit tests in the package we can test the logic bypassing the validation step. 
-
-
-
-
-
-
-
-
-
-
