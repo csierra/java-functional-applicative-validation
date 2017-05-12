@@ -14,7 +14,6 @@
 
 package com.liferay.functional.validation; 
 
-import com.liferay.functional.Applicative;
 import com.liferay.functional.Function10;
 import com.liferay.functional.Function11;
 import com.liferay.functional.Function12;
@@ -52,14 +51,14 @@ import java.util.function.Predicate;
  * @author Carlos Sierra Andrés
  */
 public interface Validator<T, R, F extends Monoid<F>>
-	extends Applicative<Validator, R>, Function<T, Validation<R, F>> {
+	extends Function<T, Validation<R, F>> {
 
 	Validation<R, F> validate(T input);
 
 	default Validator<T, R, F> and(Validator<T, R, F> other) {
 		return input ->
-			this.validate(input).map(x -> (Function)(y -> y)).apply(
-				other.validate(input));
+			Validation.apply(
+				(x, y) -> x, validate(input), other.validate(input));
 	}
 
 	@Override
@@ -78,7 +77,7 @@ public interface Validator<T, R, F extends Monoid<F>>
 
 	static <T, F extends Monoid<F>> Validator<T, T, F> partial(
 		Validator<T, ?, F> validator) {
-		
+
 		return input -> validator.validate(input).map(ign -> input);
 	}
 
@@ -87,19 +86,11 @@ public interface Validator<T, R, F extends Monoid<F>>
 		Validator<T, ?, F> ... validators) {
 
 		return Arrays.stream(validators).map(Validator::partial).reduce(
-			Success::new, Validator::and);
+			(Validation::just), Validator::and);
 	}
 
-	@Override
-	default <S, U> Validator<T, U, F> apply(Applicative<Validator, S> ap) {
-		return input -> validate(input).apply(
-			((Validator<T, S, F>)ap).validate(input));
-	}
-
-	@Override
-	default <S, U> Validator<T, U, F> flatApply(Applicative<Validator, S> ap) {
-		return input -> validate(input).flatApply(
-			((Validator<T, S, F>)ap).validate(input));
+	default <S> Validator<T, S, F> applyTo(Validator<T, Function<R, S>, F> ap) {
+		return ap.flatMap(this::map);
 	}
 
 	default public <S> Validator<T, S, F> flatMap(
@@ -138,6 +129,110 @@ public interface Validator<T, R, F extends Monoid<F>>
 				return new Failure<>(error.apply(input));
 			}
 		};
+	}
+	
+	public static <T, R, F extends Monoid<F>> Validator<T, R, F> just(R r) {
+		return input -> Validation.just(r);
+	}
+
+	public static <A, B, VAL, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function2<A, B, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b) {
+		return b.applyTo(a.applyTo(just((A aa) -> fun.curried().apply(aa))));
+	}
+
+	public static <A, B, C, VAL, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function3<A, B, C, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c) {
+		return c.applyTo(Validator.apply((A aa, B bb) -> fun.curried().apply(aa).apply(bb), a, b));
+	}
+
+	public static <A, B, C, D, VAL, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function4<A, B, C, D, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d) {
+		return d.applyTo(Validator.apply((A aa, B bb, C cc) -> fun.curried().apply(aa).apply(bb).apply(cc), a, b, c));
+	}
+
+	public static <A, B, C, D, E, VAL, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function5<A, B, C, D, E, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e) {
+		return e.applyTo(Validator.apply((A aa, B bb, C cc, D dd) -> fun.curried().apply(aa).apply(bb).apply(cc).apply(dd), a, b, c, d));
+	}
+
+	public static <A, B, C, D, E, F, VAL, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function6<A, B, C, D, E, F, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f) {
+		return f.applyTo(Validator.apply((A aa, B bb, C cc, D dd, E ee) -> fun.curried().apply(aa).apply(bb).apply(cc).apply(dd).apply(ee), a, b, c, d, e));
+	}
+
+	public static <A, B, C, D, E, F, G, VAL, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function7<A, B, C, D, E, F, G, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g) {
+		return g.applyTo(Validator.apply((A aa, B bb, C cc, D dd, E ee, F ff) -> fun.curried().apply(aa).apply(bb).apply(cc).apply(dd).apply(ee).apply(ff), a, b, c, d, e, f));
+	}
+
+	public static <A, B, C, D, E, F, G, H, VAL, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function8<A, B, C, D, E, F, G, H, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h) {
+		return h.applyTo(Validator.apply((A aa, B bb, C cc, D dd, E ee, F ff, G gg) -> fun.curried().apply(aa).apply(bb).apply(cc).apply(dd).apply(ee).apply(ff).apply(gg), a, b, c, d, e, f, g));
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, VAL, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function9<A, B, C, D, E, F, G, H, I, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i) {
+		return i.applyTo(Validator.apply((A aa, B bb, C cc, D dd, E ee, F ff, G gg, H hh) -> fun.curried().apply(aa).apply(bb).apply(cc).apply(dd).apply(ee).apply(ff).apply(gg).apply(hh), a, b, c, d, e, f, g, h));
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, VAL, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function10<A, B, C, D, E, F, G, H, I, J, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j) {
+		return j.applyTo(Validator.apply((A aa, B bb, C cc, D dd, E ee, F ff, G gg, H hh, I ii) -> fun.curried().apply(aa).apply(bb).apply(cc).apply(dd).apply(ee).apply(ff).apply(gg).apply(hh).apply(ii), a, b, c, d, e, f, g, h, i));
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, VAL, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function11<A, B, C, D, E, F, G, H, I, J, K, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k) {
+		return k.applyTo(Validator.apply((A aa, B bb, C cc, D dd, E ee, F ff, G gg, H hh, I ii, J jj) -> fun.curried().apply(aa).apply(bb).apply(cc).apply(dd).apply(ee).apply(ff).apply(gg).apply(hh).apply(ii).apply(jj), a, b, c, d, e, f, g, h, i, j));
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, VAL, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function12<A, B, C, D, E, F, G, H, I, J, K, L, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k, Validator<VAL, L, FAILURE> l) {
+		return l.applyTo(Validator.apply((A aa, B bb, C cc, D dd, E ee, F ff, G gg, H hh, I ii, J jj, K kk) -> fun.curried().apply(aa).apply(bb).apply(cc).apply(dd).apply(ee).apply(ff).apply(gg).apply(hh).apply(ii).apply(jj).apply(kk), a, b, c, d, e, f, g, h, i, j, k));
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, VAL, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function13<A, B, C, D, E, F, G, H, I, J, K, L, M, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k, Validator<VAL, L, FAILURE> l, Validator<VAL, M, FAILURE> m) {
+		return m.applyTo(Validator.apply((A aa, B bb, C cc, D dd, E ee, F ff, G gg, H hh, I ii, J jj, K kk, L ll) -> fun.curried().apply(aa).apply(bb).apply(cc).apply(dd).apply(ee).apply(ff).apply(gg).apply(hh).apply(ii).apply(jj).apply(kk).apply(ll), a, b, c, d, e, f, g, h, i, j, k, l));
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, VAL, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function14<A, B, C, D, E, F, G, H, I, J, K, L, M, N, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k, Validator<VAL, L, FAILURE> l, Validator<VAL, M, FAILURE> m, Validator<VAL, N, FAILURE> n) {
+		return n.applyTo(Validator.apply((A aa, B bb, C cc, D dd, E ee, F ff, G gg, H hh, I ii, J jj, K kk, L ll, M mm) -> fun.curried().apply(aa).apply(bb).apply(cc).apply(dd).apply(ee).apply(ff).apply(gg).apply(hh).apply(ii).apply(jj).apply(kk).apply(ll).apply(mm), a, b, c, d, e, f, g, h, i, j, k, l, m));
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, VAL, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function15<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k, Validator<VAL, L, FAILURE> l, Validator<VAL, M, FAILURE> m, Validator<VAL, N, FAILURE> n, Validator<VAL, O, FAILURE> o) {
+		return o.applyTo(Validator.apply((A aa, B bb, C cc, D dd, E ee, F ff, G gg, H hh, I ii, J jj, K kk, L ll, M mm, N nn) -> fun.curried().apply(aa).apply(bb).apply(cc).apply(dd).apply(ee).apply(ff).apply(gg).apply(hh).apply(ii).apply(jj).apply(kk).apply(ll).apply(mm).apply(nn), a, b, c, d, e, f, g, h, i, j, k, l, m, n));
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, VAL, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function16<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k, Validator<VAL, L, FAILURE> l, Validator<VAL, M, FAILURE> m, Validator<VAL, N, FAILURE> n, Validator<VAL, O, FAILURE> o, Validator<VAL, P, FAILURE> p) {
+		return p.applyTo(Validator.apply((A aa, B bb, C cc, D dd, E ee, F ff, G gg, H hh, I ii, J jj, K kk, L ll, M mm, N nn, O oo) -> fun.curried().apply(aa).apply(bb).apply(cc).apply(dd).apply(ee).apply(ff).apply(gg).apply(hh).apply(ii).apply(jj).apply(kk).apply(ll).apply(mm).apply(nn).apply(oo), a, b, c, d, e, f, g, h, i, j, k, l, m, n, o));
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, VAL, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function17<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k, Validator<VAL, L, FAILURE> l, Validator<VAL, M, FAILURE> m, Validator<VAL, N, FAILURE> n, Validator<VAL, O, FAILURE> o, Validator<VAL, P, FAILURE> p, Validator<VAL, Q, FAILURE> q) {
+		return q.applyTo(Validator.apply((A aa, B bb, C cc, D dd, E ee, F ff, G gg, H hh, I ii, J jj, K kk, L ll, M mm, N nn, O oo, P pp) -> fun.curried().apply(aa).apply(bb).apply(cc).apply(dd).apply(ee).apply(ff).apply(gg).apply(hh).apply(ii).apply(jj).apply(kk).apply(ll).apply(mm).apply(nn).apply(oo).apply(pp), a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p));
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, VAL, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function18<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k, Validator<VAL, L, FAILURE> l, Validator<VAL, M, FAILURE> m, Validator<VAL, N, FAILURE> n, Validator<VAL, O, FAILURE> o, Validator<VAL, P, FAILURE> p, Validator<VAL, Q, FAILURE> q, Validator<VAL, R, FAILURE> r) {
+		return r.applyTo(Validator.apply((A aa, B bb, C cc, D dd, E ee, F ff, G gg, H hh, I ii, J jj, K kk, L ll, M mm, N nn, O oo, P pp, Q qq) -> fun.curried().apply(aa).apply(bb).apply(cc).apply(dd).apply(ee).apply(ff).apply(gg).apply(hh).apply(ii).apply(jj).apply(kk).apply(ll).apply(mm).apply(nn).apply(oo).apply(pp).apply(qq), a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q));
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, VAL, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function19<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k, Validator<VAL, L, FAILURE> l, Validator<VAL, M, FAILURE> m, Validator<VAL, N, FAILURE> n, Validator<VAL, O, FAILURE> o, Validator<VAL, P, FAILURE> p, Validator<VAL, Q, FAILURE> q, Validator<VAL, R, FAILURE> r, Validator<VAL, S, FAILURE> s) {
+		return s.applyTo(Validator.apply((A aa, B bb, C cc, D dd, E ee, F ff, G gg, H hh, I ii, J jj, K kk, L ll, M mm, N nn, O oo, P pp, Q qq, R rr) -> fun.curried().apply(aa).apply(bb).apply(cc).apply(dd).apply(ee).apply(ff).apply(gg).apply(hh).apply(ii).apply(jj).apply(kk).apply(ll).apply(mm).apply(nn).apply(oo).apply(pp).apply(qq).apply(rr), a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r));
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, VAL, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function20<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k, Validator<VAL, L, FAILURE> l, Validator<VAL, M, FAILURE> m, Validator<VAL, N, FAILURE> n, Validator<VAL, O, FAILURE> o, Validator<VAL, P, FAILURE> p, Validator<VAL, Q, FAILURE> q, Validator<VAL, R, FAILURE> r, Validator<VAL, S, FAILURE> s, Validator<VAL, T, FAILURE> t) {
+		return t.applyTo(Validator.apply((A aa, B bb, C cc, D dd, E ee, F ff, G gg, H hh, I ii, J jj, K kk, L ll, M mm, N nn, O oo, P pp, Q qq, R rr, S ss) -> fun.curried().apply(aa).apply(bb).apply(cc).apply(dd).apply(ee).apply(ff).apply(gg).apply(hh).apply(ii).apply(jj).apply(kk).apply(ll).apply(mm).apply(nn).apply(oo).apply(pp).apply(qq).apply(rr).apply(ss), a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s));
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, VAL, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function21<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k, Validator<VAL, L, FAILURE> l, Validator<VAL, M, FAILURE> m, Validator<VAL, N, FAILURE> n, Validator<VAL, O, FAILURE> o, Validator<VAL, P, FAILURE> p, Validator<VAL, Q, FAILURE> q, Validator<VAL, R, FAILURE> r, Validator<VAL, S, FAILURE> s, Validator<VAL, T, FAILURE> t, Validator<VAL, U, FAILURE> u) {
+		return u.applyTo(Validator.apply((A aa, B bb, C cc, D dd, E ee, F ff, G gg, H hh, I ii, J jj, K kk, L ll, M mm, N nn, O oo, P pp, Q qq, R rr, S ss, T tt) -> fun.curried().apply(aa).apply(bb).apply(cc).apply(dd).apply(ee).apply(ff).apply(gg).apply(hh).apply(ii).apply(jj).apply(kk).apply(ll).apply(mm).apply(nn).apply(oo).apply(pp).apply(qq).apply(rr).apply(ss).apply(tt), a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t));
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, VAL, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function22<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k, Validator<VAL, L, FAILURE> l, Validator<VAL, M, FAILURE> m, Validator<VAL, N, FAILURE> n, Validator<VAL, O, FAILURE> o, Validator<VAL, P, FAILURE> p, Validator<VAL, Q, FAILURE> q, Validator<VAL, R, FAILURE> r, Validator<VAL, S, FAILURE> s, Validator<VAL, T, FAILURE> t, Validator<VAL, U, FAILURE> u, Validator<VAL, V, FAILURE> v) {
+		return v.applyTo(Validator.apply((A aa, B bb, C cc, D dd, E ee, F ff, G gg, H hh, I ii, J jj, K kk, L ll, M mm, N nn, O oo, P pp, Q qq, R rr, S ss, T tt, U uu) -> fun.curried().apply(aa).apply(bb).apply(cc).apply(dd).apply(ee).apply(ff).apply(gg).apply(hh).apply(ii).apply(jj).apply(kk).apply(ll).apply(mm).apply(nn).apply(oo).apply(pp).apply(qq).apply(rr).apply(ss).apply(tt).apply(uu), a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u));
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, VAL, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function23<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k, Validator<VAL, L, FAILURE> l, Validator<VAL, M, FAILURE> m, Validator<VAL, N, FAILURE> n, Validator<VAL, O, FAILURE> o, Validator<VAL, P, FAILURE> p, Validator<VAL, Q, FAILURE> q, Validator<VAL, R, FAILURE> r, Validator<VAL, S, FAILURE> s, Validator<VAL, T, FAILURE> t, Validator<VAL, U, FAILURE> u, Validator<VAL, V, FAILURE> v, Validator<VAL, W, FAILURE> w) {
+		return w.applyTo(Validator.apply((A aa, B bb, C cc, D dd, E ee, F ff, G gg, H hh, I ii, J jj, K kk, L ll, M mm, N nn, O oo, P pp, Q qq, R rr, S ss, T tt, U uu, V vv) -> fun.curried().apply(aa).apply(bb).apply(cc).apply(dd).apply(ee).apply(ff).apply(gg).apply(hh).apply(ii).apply(jj).apply(kk).apply(ll).apply(mm).apply(nn).apply(oo).apply(pp).apply(qq).apply(rr).apply(ss).apply(tt).apply(uu).apply(vv), a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v));
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, VAL, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function24<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k, Validator<VAL, L, FAILURE> l, Validator<VAL, M, FAILURE> m, Validator<VAL, N, FAILURE> n, Validator<VAL, O, FAILURE> o, Validator<VAL, P, FAILURE> p, Validator<VAL, Q, FAILURE> q, Validator<VAL, R, FAILURE> r, Validator<VAL, S, FAILURE> s, Validator<VAL, T, FAILURE> t, Validator<VAL, U, FAILURE> u, Validator<VAL, V, FAILURE> v, Validator<VAL, W, FAILURE> w, Validator<VAL, X, FAILURE> x) {
+		return x.applyTo(Validator.apply((A aa, B bb, C cc, D dd, E ee, F ff, G gg, H hh, I ii, J jj, K kk, L ll, M mm, N nn, O oo, P pp, Q qq, R rr, S ss, T tt, U uu, V vv, W ww) -> fun.curried().apply(aa).apply(bb).apply(cc).apply(dd).apply(ee).apply(ff).apply(gg).apply(hh).apply(ii).apply(jj).apply(kk).apply(ll).apply(mm).apply(nn).apply(oo).apply(pp).apply(qq).apply(rr).apply(ss).apply(tt).apply(uu).apply(vv).apply(ww), a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w));
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, VAL, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function25<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k, Validator<VAL, L, FAILURE> l, Validator<VAL, M, FAILURE> m, Validator<VAL, N, FAILURE> n, Validator<VAL, O, FAILURE> o, Validator<VAL, P, FAILURE> p, Validator<VAL, Q, FAILURE> q, Validator<VAL, R, FAILURE> r, Validator<VAL, S, FAILURE> s, Validator<VAL, T, FAILURE> t, Validator<VAL, U, FAILURE> u, Validator<VAL, V, FAILURE> v, Validator<VAL, W, FAILURE> w, Validator<VAL, X, FAILURE> x, Validator<VAL, Y, FAILURE> y) {
+		return y.applyTo(Validator.apply((A aa, B bb, C cc, D dd, E ee, F ff, G gg, H hh, I ii, J jj, K kk, L ll, M mm, N nn, O oo, P pp, Q qq, R rr, S ss, T tt, U uu, V vv, W ww, X xx) -> fun.curried().apply(aa).apply(bb).apply(cc).apply(dd).apply(ee).apply(ff).apply(gg).apply(hh).apply(ii).apply(jj).apply(kk).apply(ll).apply(mm).apply(nn).apply(oo).apply(pp).apply(qq).apply(rr).apply(ss).apply(tt).apply(uu).apply(vv).apply(ww).apply(xx), a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x));
+	}
+
+	public static <A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, VAL, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function26<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k, Validator<VAL, L, FAILURE> l, Validator<VAL, M, FAILURE> m, Validator<VAL, N, FAILURE> n, Validator<VAL, O, FAILURE> o, Validator<VAL, P, FAILURE> p, Validator<VAL, Q, FAILURE> q, Validator<VAL, R, FAILURE> r, Validator<VAL, S, FAILURE> s, Validator<VAL, T, FAILURE> t, Validator<VAL, U, FAILURE> u, Validator<VAL, V, FAILURE> v, Validator<VAL, W, FAILURE> w, Validator<VAL, X, FAILURE> x, Validator<VAL, Y, FAILURE> y, Validator<VAL, Z, FAILURE> z) {
+		return z.applyTo(Validator.apply((A aa, B bb, C cc, D dd, E ee, F ff, G gg, H hh, I ii, J jj, K kk, L ll, M mm, N nn, O oo, P pp, Q qq, R rr, S ss, T tt, U uu, V vv, W ww, X xx, Y yy) -> fun.curried().apply(aa).apply(bb).apply(cc).apply(dd).apply(ee).apply(ff).apply(gg).apply(hh).apply(ii).apply(jj).apply(kk).apply(ll).apply(mm).apply(nn).apply(oo).apply(pp).apply(qq).apply(rr).apply(ss).apply(tt).apply(uu).apply(vv).apply(ww).apply(xx).apply(yy), a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y));
 	}
 
 //	static Validator<String, String, FAILURE> hasLength(int length) {
@@ -219,109 +314,5 @@ public interface Validator<T, R, F extends Monoid<F>>
 //			}
 //		};
 //	}
-//
-//	public static <VAL, A, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function1<A, RESULT> fun, Validator<VAL, A, FAILURE> a) {
-//		return a.map(fun.curried());
-//	}
-
-	public static <VAL, A, B, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function2<A, B, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b) {
-		return a.map(fun.curried()).apply(b);
-	}
-
-	public static <VAL, A, B, C, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function3<A, B, C, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c) {
-		return a.map(fun.curried()).apply(b).apply(c);
-	}
-
-	public static <VAL, A, B, C, D, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function4<A, B, C, D, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d) {
-		return a.map(fun.curried()).apply(b).apply(c).apply(d);
-	}
-
-	public static <VAL, A, B, C, D, E, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function5<A, B, C, D, E, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e) {
-		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e);
-	}
-
-	public static <VAL, A, B, C, D, E, F, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function6<A, B, C, D, E, F, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f) {
-		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f);
-	}
-
-	public static <VAL, A, B, C, D, E, F, G, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function7<A, B, C, D, E, F, G, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g) {
-		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g);
-	}
-
-	public static <VAL, A, B, C, D, E, F, G, H, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function8<A, B, C, D, E, F, G, H, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h) {
-		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h);
-	}
-
-	public static <VAL, A, B, C, D, E, F, G, H, I, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function9<A, B, C, D, E, F, G, H, I, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i) {
-		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i);
-	}
-
-	public static <VAL, A, B, C, D, E, F, G, H, I, J, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function10<A, B, C, D, E, F, G, H, I, J, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j) {
-		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j);
-	}
-
-	public static <VAL, A, B, C, D, E, F, G, H, I, J, K, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function11<A, B, C, D, E, F, G, H, I, J, K, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k) {
-		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k);
-	}
-
-	public static <VAL, A, B, C, D, E, F, G, H, I, J, K, L, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function12<A, B, C, D, E, F, G, H, I, J, K, L, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k, Validator<VAL, L, FAILURE> l) {
-		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l);
-	}
-
-	public static <VAL, A, B, C, D, E, F, G, H, I, J, K, L, M, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function13<A, B, C, D, E, F, G, H, I, J, K, L, M, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k, Validator<VAL, L, FAILURE> l, Validator<VAL, M, FAILURE> m) {
-		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m);
-	}
-
-	public static <VAL, A, B, C, D, E, F, G, H, I, J, K, L, M, N, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function14<A, B, C, D, E, F, G, H, I, J, K, L, M, N, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k, Validator<VAL, L, FAILURE> l, Validator<VAL, M, FAILURE> m, Validator<VAL, N, FAILURE> n) {
-		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n);
-	}
-
-	public static <VAL, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function15<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k, Validator<VAL, L, FAILURE> l, Validator<VAL, M, FAILURE> m, Validator<VAL, N, FAILURE> n, Validator<VAL, O, FAILURE> o) {
-		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o);
-	}
-
-	public static <VAL, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function16<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k, Validator<VAL, L, FAILURE> l, Validator<VAL, M, FAILURE> m, Validator<VAL, N, FAILURE> n, Validator<VAL, O, FAILURE> o, Validator<VAL, P, FAILURE> p) {
-		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p);
-	}
-
-	public static <VAL, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function17<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k, Validator<VAL, L, FAILURE> l, Validator<VAL, M, FAILURE> m, Validator<VAL, N, FAILURE> n, Validator<VAL, O, FAILURE> o, Validator<VAL, P, FAILURE> p, Validator<VAL, Q, FAILURE> q) {
-		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q);
-	}
-
-	public static <VAL, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function18<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k, Validator<VAL, L, FAILURE> l, Validator<VAL, M, FAILURE> m, Validator<VAL, N, FAILURE> n, Validator<VAL, O, FAILURE> o, Validator<VAL, P, FAILURE> p, Validator<VAL, Q, FAILURE> q, Validator<VAL, R, FAILURE> r) {
-		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r);
-	}
-
-	public static <VAL, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function19<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k, Validator<VAL, L, FAILURE> l, Validator<VAL, M, FAILURE> m, Validator<VAL, N, FAILURE> n, Validator<VAL, O, FAILURE> o, Validator<VAL, P, FAILURE> p, Validator<VAL, Q, FAILURE> q, Validator<VAL, R, FAILURE> r, Validator<VAL, S, FAILURE> s) {
-		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s);
-	}
-
-	public static <VAL, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function20<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k, Validator<VAL, L, FAILURE> l, Validator<VAL, M, FAILURE> m, Validator<VAL, N, FAILURE> n, Validator<VAL, O, FAILURE> o, Validator<VAL, P, FAILURE> p, Validator<VAL, Q, FAILURE> q, Validator<VAL, R, FAILURE> r, Validator<VAL, S, FAILURE> s, Validator<VAL, T, FAILURE> t) {
-		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s).apply(t);
-	}
-
-	public static <VAL, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function21<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k, Validator<VAL, L, FAILURE> l, Validator<VAL, M, FAILURE> m, Validator<VAL, N, FAILURE> n, Validator<VAL, O, FAILURE> o, Validator<VAL, P, FAILURE> p, Validator<VAL, Q, FAILURE> q, Validator<VAL, R, FAILURE> r, Validator<VAL, S, FAILURE> s, Validator<VAL, T, FAILURE> t, Validator<VAL, U, FAILURE> u) {
-		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s).apply(t).apply(u);
-	}
-
-	public static <VAL, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function22<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k, Validator<VAL, L, FAILURE> l, Validator<VAL, M, FAILURE> m, Validator<VAL, N, FAILURE> n, Validator<VAL, O, FAILURE> o, Validator<VAL, P, FAILURE> p, Validator<VAL, Q, FAILURE> q, Validator<VAL, R, FAILURE> r, Validator<VAL, S, FAILURE> s, Validator<VAL, T, FAILURE> t, Validator<VAL, U, FAILURE> u, Validator<VAL, V, FAILURE> v) {
-		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s).apply(t).apply(u).apply(v);
-	}
-
-	public static <VAL, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function23<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k, Validator<VAL, L, FAILURE> l, Validator<VAL, M, FAILURE> m, Validator<VAL, N, FAILURE> n, Validator<VAL, O, FAILURE> o, Validator<VAL, P, FAILURE> p, Validator<VAL, Q, FAILURE> q, Validator<VAL, R, FAILURE> r, Validator<VAL, S, FAILURE> s, Validator<VAL, T, FAILURE> t, Validator<VAL, U, FAILURE> u, Validator<VAL, V, FAILURE> v, Validator<VAL, W, FAILURE> w) {
-		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s).apply(t).apply(u).apply(v).apply(w);
-	}
-
-	public static <VAL, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function24<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k, Validator<VAL, L, FAILURE> l, Validator<VAL, M, FAILURE> m, Validator<VAL, N, FAILURE> n, Validator<VAL, O, FAILURE> o, Validator<VAL, P, FAILURE> p, Validator<VAL, Q, FAILURE> q, Validator<VAL, R, FAILURE> r, Validator<VAL, S, FAILURE> s, Validator<VAL, T, FAILURE> t, Validator<VAL, U, FAILURE> u, Validator<VAL, V, FAILURE> v, Validator<VAL, W, FAILURE> w, Validator<VAL, X, FAILURE> x) {
-		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s).apply(t).apply(u).apply(v).apply(w).apply(x);
-	}
-
-	public static <VAL, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function25<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k, Validator<VAL, L, FAILURE> l, Validator<VAL, M, FAILURE> m, Validator<VAL, N, FAILURE> n, Validator<VAL, O, FAILURE> o, Validator<VAL, P, FAILURE> p, Validator<VAL, Q, FAILURE> q, Validator<VAL, R, FAILURE> r, Validator<VAL, S, FAILURE> s, Validator<VAL, T, FAILURE> t, Validator<VAL, U, FAILURE> u, Validator<VAL, V, FAILURE> v, Validator<VAL, W, FAILURE> w, Validator<VAL, X, FAILURE> x, Validator<VAL, Y, FAILURE> y) {
-		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s).apply(t).apply(u).apply(v).apply(w).apply(x).apply(y);
-	}
-
-	public static <VAL, A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, RESULT, FAILURE extends Monoid<FAILURE>> Validator<VAL, RESULT, FAILURE> apply(Function26<A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, RESULT> fun, Validator<VAL, A, FAILURE> a, Validator<VAL, B, FAILURE> b, Validator<VAL, C, FAILURE> c, Validator<VAL, D, FAILURE> d, Validator<VAL, E, FAILURE> e, Validator<VAL, F, FAILURE> f, Validator<VAL, G, FAILURE> g, Validator<VAL, H, FAILURE> h, Validator<VAL, I, FAILURE> i, Validator<VAL, J, FAILURE> j, Validator<VAL, K, FAILURE> k, Validator<VAL, L, FAILURE> l, Validator<VAL, M, FAILURE> m, Validator<VAL, N, FAILURE> n, Validator<VAL, O, FAILURE> o, Validator<VAL, P, FAILURE> p, Validator<VAL, Q, FAILURE> q, Validator<VAL, R, FAILURE> r, Validator<VAL, S, FAILURE> s, Validator<VAL, T, FAILURE> t, Validator<VAL, U, FAILURE> u, Validator<VAL, V, FAILURE> v, Validator<VAL, W, FAILURE> w, Validator<VAL, X, FAILURE> x, Validator<VAL, Y, FAILURE> y, Validator<VAL, Z, FAILURE> z) {
-		return a.map(fun.curried()).apply(b).apply(c).apply(d).apply(e).apply(f).apply(g).apply(h).apply(i).apply(j).apply(k).apply(l).apply(m).apply(n).apply(o).apply(p).apply(q).apply(r).apply(s).apply(t).apply(u).apply(v).apply(w).apply(x).apply(y).apply(z);
-	}
 
 }
