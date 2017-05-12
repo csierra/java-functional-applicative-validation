@@ -15,8 +15,6 @@
 package com.liferay.functional.fieldprovider;
 
 import com.liferay.functional.Monoid;
-import com.liferay.functional.fieldprovider.FieldFail;
-import com.liferay.functional.fieldprovider.FieldProvider;
 import com.liferay.functional.fieldprovider.FieldProvider.Adaptor;
 import com.liferay.functional.validation.Fail;
 import com.liferay.functional.validation.Validation;
