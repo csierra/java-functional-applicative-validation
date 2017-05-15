@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2000-2013 Liferay, Inc. All rights reserved.
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
  * <p>
  * This library is free software; you can redistribute it and/or modify it under
  * the terms of the GNU Lesser General Public License as published by the Free
@@ -14,14 +14,31 @@
 
 package com.liferay.functional.fieldprovider;
 
+import com.liferay.functional.validation.Fail;
+import com.liferay.functional.validation.Validator;
+
+import java.util.Map;
 import java.util.Optional;
 
 /**
  * @author Carlos Sierra Andrés
  */
-public interface StringProvider extends FieldProvider {
+public class MapStringProvider implements StringProvider {
+
+    private Map<String, String> _map;
+
+    public MapStringProvider(Map<String, String> map) {
+        _map = map;
+    }
 
     @Override
-    Optional<String> get(String name);
+    public Optional<String> get(String name) {
+        return Optional.ofNullable(_map.get(name));
+    }
+
+    @Override
+    public Validator<Object, FieldProvider, Fail> safeFieldProvider() {
+        return FieldProvider.safeCast(Map.class).map(MapStringProvider::new);
+    }
 
 }
