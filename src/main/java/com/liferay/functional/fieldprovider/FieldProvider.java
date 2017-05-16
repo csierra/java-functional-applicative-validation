@@ -16,6 +16,7 @@ package com.liferay.functional.fieldprovider;
 
 import com.liferay.functional.Function2;
 import com.liferay.functional.Monoid;
+import com.liferay.functional.validation.Composer;
 import com.liferay.functional.validation.Fail;
 import com.liferay.functional.validation.Validation;
 import com.liferay.functional.validation.Validation.Failure;
@@ -31,13 +32,13 @@ import static com.liferay.functional.validation.Validation.just;
 /**
  * @author Carlos Sierra Andrés
  */
-public interface FieldProvider {
+public interface FieldProvider<T> {
 
-    <T> Optional<T> get(String name);
+    Optional<T> get(String name);
 
-    Validator<Object, FieldProvider, Fail> safeFieldProvider();
+    <S> Validator<S, FieldProvider<T>, Fail> safeFieldProvider();
 
-    static <T> SafeCast<T, Fail> safeCast(Class<T> clazz) {
+    static <C> SafeCast<C, Fail> safeCast(Class<C> clazz) {
         return input -> {
             try {
                 return new Validation.Success<>(clazz.cast(input));
@@ -49,7 +50,7 @@ public interface FieldProvider {
         };
     }
 
-    public static <T> Validator<Optional<T>, T, Fail> mandatory() {
+    public static <R> Validator<Optional<R>, R, Fail> mandatory() {
         return input -> {
             if (input.isPresent()) {
                 return just(input.get());
@@ -79,15 +80,15 @@ public interface FieldProvider {
 
     }
 
-    interface Adaptor<F extends Monoid<F>> {
-        <T, R> Validation<R, FieldFail> safeGet(
+    interface Adaptor<T, F extends Monoid<F>> {
+        <R> Validation<R, FieldFail> safeGet(
             String fieldName, Validator<Optional<T>, R, F> validator);
 
-        Validation<Adaptor<F>, FieldFail> getAdaptor(String fieldName);
+        Validation<Adaptor<T, F>, FieldFail> getAdaptor(String fieldName);
 
         static <T, R, F extends Monoid<F>>
         Validation<R, FieldFail> safeGet(
-            Adaptor<F> adaptor, String fieldName,
+            Adaptor<T, F> adaptor, String fieldName,
             Validator <Optional<T>, R, F> validator) {
 
             return adaptor.safeGet(fieldName, validator);
@@ -95,21 +96,21 @@ public interface FieldProvider {
 
         static <T, R, F extends Monoid<F>>
         Validation<R, FieldFail> safeGet(
-            Validation<Adaptor<F>, FieldFail> adaptor, String fieldName,
+            Validation<Adaptor<T, F>, FieldFail> adaptor, String fieldName,
             Validator<Optional<T>, R, F> validator) {
 
             return adaptor.flatMap(a -> a.safeGet(fieldName, validator));
         }
 
-        static <F extends Monoid<F>>
-        Validation<Adaptor<F>, FieldFail> focus(
-            Adaptor<F> adaptor, String ... fields) {
+        static <T, F extends Monoid<F>>
+        Validation<Adaptor<T, F>, FieldFail> focus(
+            Adaptor<T, F> adaptor, String ... fields) {
 
             if (fields.length == 0) {
                 return just(adaptor);
             }
 
-            Validation<Adaptor<F>, FieldFail> current = adaptor.getAdaptor(
+            Validation<Adaptor<T, F>, FieldFail> current = adaptor.getAdaptor(
                 fields[0]);
 
             if (fields.length == 1) {
@@ -127,20 +128,20 @@ public interface FieldProvider {
         }
     }
 
-    default <F extends Monoid<F>> Adaptor<F> getAdaptor(
+    default <F extends Monoid<F>> Adaptor<T, F> getAdaptor(
         Function2<String, F, FieldFail> map) {
 
         return getAdaptor(map, Collections.emptyList());
     }
 
-    default <F extends Monoid<F>> Adaptor<F> getAdaptor(
+    default <F extends Monoid<F>> Adaptor<T, F> getAdaptor(
         Function2<String, F, FieldFail> map,
         Collection<String> stack) {
 
-        return new Adaptor<F>() {
+        return new Adaptor<T, F>() {
 
             @Override
-            public <T, R> Validation<R, FieldFail> safeGet(
+            public <R> Validation<R, FieldFail> safeGet(
                 String fieldName, Validator<Optional<T>, R, F> validator) {
 
                 return validator.validate(get(fieldName)).mapFailures(
@@ -155,15 +156,18 @@ public interface FieldProvider {
             }
 
             @Override
-            public Validation<Adaptor<F>, FieldFail> getAdaptor(
+            public Validation<Adaptor<T, F>, FieldFail> getAdaptor(
                 String fieldName) {
 
                 ArrayList<String> objects = new ArrayList<>(stack);
 
                 objects.add(0, fieldName);
 
-                return mandatory().
-                    compose(safeFieldProvider()).
+                Validator<Optional<T>, FieldProvider<T>, Fail>
+                    safeFieldProvider = Composer.compose(
+                        mandatory(), safeFieldProvider());
+
+                return safeFieldProvider.
                     validate(get(fieldName)).
                     map(fp -> fp.getAdaptor(map, objects)).mapFailures(
                     f -> new FieldFail(fieldName, f));

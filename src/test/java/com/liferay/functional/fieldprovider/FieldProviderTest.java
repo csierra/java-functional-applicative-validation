@@ -40,7 +40,7 @@ import static com.liferay.functional.validation.Validator.predicate;
  */
 public class FieldProviderTest {
 
-    static class MapFieldProvider implements FieldProvider {
+    static class MapFieldProvider<T> implements FieldProvider<T> {
 
         private Map<String, Object> _map;
 
@@ -49,7 +49,7 @@ public class FieldProviderTest {
         }
 
         @Override
-        public <T> Optional<T> get(String name) {
+        public Optional<T> get(String name) {
             return Optional.ofNullable((T)_map.get(name));
         }
 
@@ -66,13 +66,13 @@ public class FieldProviderTest {
 
         map.put("test", "testValueLongerThan10");
 
-        MapFieldProvider fieldProvider = new MapFieldProvider(map);
+        MapFieldProvider<Object> fieldProvider = new MapFieldProvider<>(map);
 
         Validator<String, String, Fail> longerThan10 =
             predicate(
                 s -> s.length() > 10, s -> new Fail("must be longer than 10"));
 
-        Adaptor<Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
+        Adaptor<Object, Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
 
         Validation<String, FieldFail> validation = adaptor.safeGet(
             "test", compose(mandatory(), safeCast(String.class), longerThan10));
@@ -84,13 +84,13 @@ public class FieldProviderTest {
     public void testFieldProviderWhenNull() {
         HashMap<String, Object> map = new HashMap<>();
 
-        MapFieldProvider fieldProvider = new MapFieldProvider(map);
+        MapFieldProvider<Object> fieldProvider = new MapFieldProvider<>(map);
 
         Validator<String, String, Fail> longerThan10 =
             predicate(
                 s -> s.length() > 10, s -> new Fail("must be longer than 10"));
 
-        Adaptor<Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
+        Adaptor<Object, Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
 
         Validation<String, FieldFail> validation =
             adaptor.safeGet(
@@ -108,13 +108,13 @@ public class FieldProviderTest {
 
         map.put("test", "testValue");
 
-        MapFieldProvider fieldProvider = new MapFieldProvider(map);
+        MapFieldProvider<Object> fieldProvider = new MapFieldProvider<>(map);
 
         Validator<String, String, Fail> longerThan10 =
             predicate(
                 s -> s.length() > 10, s -> new Fail("must be longer than 10"));
 
-        Adaptor<Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
+        Adaptor<Object, Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
 
         Validation<String, FieldFail> validation =
             adaptor.safeGet(
@@ -137,13 +137,13 @@ public class FieldProviderTest {
 
         nested.put("test", "testValueLongerThan10");
 
-        FieldProvider fieldProvider = new MapFieldProvider(map);
+        FieldProvider<Object> fieldProvider = new MapFieldProvider<>(map);
 
         Validator<String, String, Fail> longerThan10 =
             predicate(
                 s -> s.length() > 10, s -> new Fail("must be longer than 10"));
 
-        Adaptor<Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
+        Adaptor<Object, Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
 
         Assert.assertEquals(
             just("testValueLongerThan10"),
@@ -158,13 +158,13 @@ public class FieldProviderTest {
     public void testFieldProviderWhenNestedIsNull() {
         HashMap<String, Object> map = new HashMap<>();
 
-        FieldProvider fieldProvider = new MapFieldProvider(map);
+        FieldProvider<Object> fieldProvider = new MapFieldProvider<>(map);
 
         Validator<String, String, Fail> longerThan10 =
             predicate(
                 s -> s.length() > 10, s -> new Fail("must be longer than 10"));
 
-        Adaptor<Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
+        Adaptor<Object, Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
 
         Validation<String, FieldFail> validation =
             adaptor.getAdaptor("nested").flatMap(nestedAdaptor ->
@@ -184,13 +184,13 @@ public class FieldProviderTest {
 
         map.put("nested", "wrong");
 
-        FieldProvider fieldProvider = new MapFieldProvider(map);
+        FieldProvider<Object> fieldProvider = new MapFieldProvider<>(map);
 
         Validator<String, String, Fail> longerThan10 =
             predicate(
                 s -> s.length() > 10, s -> new Fail("must be longer than 10"));
 
-        Adaptor<Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
+        Adaptor<Object, Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
 
         Validation<String, FieldFail> validation =
             adaptor.getAdaptor("nested").flatMap(nestedAdaptor ->
@@ -220,15 +220,15 @@ public class FieldProviderTest {
 
         map.put("nested", nestedMap);
 
-        FieldProvider fieldProvider = new MapFieldProvider(map);
+        FieldProvider<Object> fieldProvider = new MapFieldProvider<>(map);
 
         Validator<String, String, Fail> longerThan10 =
             predicate(
                 s -> s.length() > 10, s -> new Fail("must be longer than 10"));
 
-        Adaptor<Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
+        Adaptor<Object, Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
 
-        Validation<Adaptor<Fail>, FieldFail> nested2 = focus(
+        Validation<Adaptor<Object, Fail>, FieldFail> nested2 = focus(
             adaptor, "nested", "nested2");
 
         Validation<String, FieldFail> validation =
@@ -258,15 +258,15 @@ public class FieldProviderTest {
 
         map.put("nested", nestedMap);
 
-        FieldProvider fieldProvider = new MapFieldProvider(map);
+        FieldProvider<Object> fieldProvider = new MapFieldProvider<>(map);
 
         Validator<String, String, Fail> longerThan10 =
             predicate(
                 s -> s.length() > 10, s -> new Fail("must be longer than 10"));
 
-        Adaptor<Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
+        Adaptor<Object, Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
 
-        Validation<Adaptor<Fail>, FieldFail> nested = focus(
+        Validation<Adaptor<Object, Fail>, FieldFail> nested = focus(
             adaptor, "nested", "nested2");
 
         Validation<String, FieldFail> validation =
@@ -291,18 +291,18 @@ public class FieldProviderTest {
 
         map.put("nested", nestedMap);
 
-        FieldProvider fieldProvider = new MapFieldProvider(map);
+        FieldProvider<Object> fieldProvider = new MapFieldProvider<>(map);
 
         Validator<String, String, Fail> longerThan10 =
             predicate(
                 s -> s.length() > 10, s -> new Fail("must be longer than 10"));
 
-        Adaptor<Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
+        Adaptor<Object, Fail> adaptor = fieldProvider.getAdaptor(FieldFail::new);
 
-        Validation<Adaptor<Fail>, FieldFail> nested = focus(
+        Validation<Adaptor<Object, Fail>, FieldFail> nested = focus(
             adaptor, "nested");
 
-        Validation<Adaptor<Fail>, FieldFail> nested2 = focus(
+        Validation<Adaptor<Object, Fail>, FieldFail> nested2 = focus(
             adaptor, "nested", "nested2");
 
         Validation<String, FieldFail> validation = Adaptor.safeGet(

@@ -25,20 +25,22 @@ import java.util.Optional;
  */
 public class MapStringProvider implements StringProvider {
 
-    private Map<String, String> _map;
+    private Map<String, Object> _map;
 
-    public MapStringProvider(Map<String, String> map) {
+    public MapStringProvider(Map<String, Object> map) {
         _map = map;
     }
 
     @Override
     public Optional<String> get(String name) {
-        return Optional.ofNullable(_map.get(name));
+        return Optional.ofNullable(_map.get(name).toString());
     }
 
     @Override
-    public Validator<Object, FieldProvider, Fail> safeFieldProvider() {
-        return FieldProvider.safeCast(Map.class).map(MapStringProvider::new);
+    public <S> Validator<S, FieldProvider<String>, Fail> safeFieldProvider() {
+        return (Validator<S, FieldProvider<String>, Fail>)
+            FieldProvider.safeCast(Map.class).<FieldProvider<String>>map(
+                MapStringProvider::new);
     }
 
 }

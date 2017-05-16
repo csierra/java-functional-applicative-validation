@@ -19,7 +19,7 @@ import java.util.Optional;
 /**
  * @author Carlos Sierra Andrés
  */
-public interface StringProvider extends FieldProvider {
+public interface StringProvider extends FieldProvider<String> {
 
     @Override
     Optional<String> get(String name);
